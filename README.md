@@ -8,6 +8,6 @@ Before Start Project :
 
 - Prisma command :
 
-* migration : npx prisma migrate dev --name AddSearchToProduct
+* migration : npx prisma migrate dev --name MIGRATIONNAME
 * npx prisma studio
 * npx prisma generate
