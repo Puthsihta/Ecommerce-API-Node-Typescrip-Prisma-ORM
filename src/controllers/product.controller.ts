@@ -21,9 +21,9 @@ const listProduct = async (req: any, res: Response, next: NextFunction) => {
   const count = await prismaClient.product.count();
   const products = await prismaClient.product.findMany({
     skip: +req?.query?.skip || 0,
-    take: 5,
+    take: 10,
   });
-  res.json({ count, data: products });
+  res.json({ total: count, limit: 10, data: products });
 };
 
 const listProductByID = async (

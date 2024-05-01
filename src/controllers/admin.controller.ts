@@ -6,7 +6,7 @@ import { ErrorCode } from "../errors/root.excpetion";
 const listUser = async (req: any, res: Response, next: NextFunction) => {
   const users = await prismaClient.user.findMany({
     skip: +req.query.skip || 0,
-    take: 5,
+    take: 10,
   });
   res.json(users);
 };
@@ -85,7 +85,7 @@ const listOrders = async (req: Request, res: Response, next: NextFunction) => {
   const orders = await prismaClient.order.findMany({
     where: whereClause,
     skip: Number(req.query.skip) || 0,
-    take: 5,
+    take: 10,
   });
 
   res.json(orders);
