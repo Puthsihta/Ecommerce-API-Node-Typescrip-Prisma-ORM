@@ -3,12 +3,11 @@ import { UnAuthorizedException } from "../errors/unauthorized.expcetion";
 import { ErrorCode } from "../errors/root.excpetion";
 
 const adminMiddleware: any = async (
-  req: any,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const user = req.user;
-  console.log("role : ", user.role);
   if (user.role == "ADMIN") {
     next();
   } else {

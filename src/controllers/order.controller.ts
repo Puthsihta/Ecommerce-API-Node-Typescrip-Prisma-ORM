@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
 
-const createOrder = async (req: any, res: Response, next: NextFunction) => {
+const createOrder = async (req: Request, res: Response) => {
   // 1. create transaction
   await prismaClient.$transaction(async (tx) => {
     // 2. list all cart
@@ -25,7 +25,7 @@ const createOrder = async (req: any, res: Response, next: NextFunction) => {
     // 4. fetch user addresss
     const address = await tx.address.findFirst({
       where: {
-        id: req.user.defaultShippinAddress,
+        id: req.user.defaultShippinAddress ?? 1,
       },
     });
     //6. creaet order
@@ -57,23 +57,36 @@ const createOrder = async (req: any, res: Response, next: NextFunction) => {
         userId: req.user.id,
       },
     });
-    return res.json(order);
+    return res.json({ message: true, data: order });
   });
 };
-const listOder = async (req: any, res: Response, next: NextFunction) => {
+const listOder = async (req: Request, res: Response) => {
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.order.count();
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
+
   const order = await prismaClient.order.findMany({
+    skip: startIndex,
+    take: Number(limit),
     where: {
       userId: req.user.id,
     },
   });
 
-  res.json(order);
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: order,
+  });
 };
-const cancelStatus = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const cancelStatus = async (req: Request, res: Response) => {
   try {
     const order = await prismaClient.order.update({
       where: {
@@ -89,7 +102,7 @@ const cancelStatus = async (
         status: "CANCEL",
       },
     });
-    res.json(order);
+    res.json({ message: true, data: order });
   } catch (err) {
     throw new NotFoundException(
       "Product not found",
@@ -97,7 +110,7 @@ const cancelStatus = async (
     );
   }
 };
-const listOrderById = async (req: any, res: Response, next: NextFunction) => {
+const listOrderById = async (req: Request, res: Response) => {
   try {
     const order = await prismaClient.order.findFirstOrThrow({
       where: {
@@ -108,7 +121,7 @@ const listOrderById = async (req: any, res: Response, next: NextFunction) => {
         events: true,
       },
     });
-    res.json(order);
+    res.json({ message: true, data: order });
   } catch (err) {
     throw new NotFoundException("Order not found", ErrorCode.PRODUCT_NOT_FOUNT);
   }

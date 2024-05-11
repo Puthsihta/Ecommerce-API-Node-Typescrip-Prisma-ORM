@@ -6,7 +6,7 @@ import { JWT_SECRET } from "../secret";
 import { prismaClient } from "..";
 
 const authMiddleware: any = async (
-  req: any,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -23,7 +23,6 @@ const authMiddleware: any = async (
       next(new UnAuthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));
     }
     req.user = user;
-    // console.log("User : ", user);
     next();
   } catch (err) {
     next(new UnAuthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));

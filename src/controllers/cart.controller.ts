@@ -1,11 +1,11 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { CartSchema, UpdateQtySchema } from "../schemas/cart";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
 import { Product } from "@prisma/client";
 
-const addCart = async (req: any, res: Response, next: NextFunction) => {
+const addCart = async (req: Request, res: Response) => {
   const validation = CartSchema.parse(req.body);
   let product: Product;
 
@@ -31,7 +31,7 @@ const addCart = async (req: any, res: Response, next: NextFunction) => {
     );
   }
 };
-const deleteCart = async (req: Request, res: Response, next: NextFunction) => {
+const deleteCart = async (req: Request, res: Response) => {
   try {
     await prismaClient.cart.delete({
       where: {
@@ -47,7 +47,7 @@ const deleteCart = async (req: Request, res: Response, next: NextFunction) => {
     );
   }
 };
-const changeQty = async (req: Request, res: Response, next: NextFunction) => {
+const changeQty = async (req: Request, res: Response) => {
   const validation = UpdateQtySchema.parse(req.body);
   try {
     const updateQty = await prismaClient.cart.update({
@@ -67,8 +67,17 @@ const changeQty = async (req: Request, res: Response, next: NextFunction) => {
     );
   }
 };
-const listCart = async (req: any, res: Response, next: NextFunction) => {
+const listCart = async (req: Request, res: Response) => {
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.cart.count();
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
   const carts = await prismaClient.cart.findMany({
+    skip: startIndex,
+    take: Number(limit),
     where: {
       userId: req.user.id,
     },
@@ -77,7 +86,14 @@ const listCart = async (req: any, res: Response, next: NextFunction) => {
     },
   });
 
-  res.json(carts);
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: carts,
+  });
 };
 
 export { addCart, deleteCart, changeQty, listCart };

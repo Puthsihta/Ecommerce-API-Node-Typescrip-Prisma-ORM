@@ -87,11 +87,11 @@ const loginAdmin = async (req: Request, res: Response) => {
 
   res.json({ user, token });
 };
-const profile = async (req: any, res: Response) => {
+const profile = async (req: Request, res: Response) => {
   res.json(req.user);
 };
 
-const updateProfile = async (req: any, res: Response) => {
+const updateProfile = async (req: Request, res: Response) => {
   const validation = (await UpdateUserSchema.parse(req.body)) as any;
   let shippingAddress: Address;
   let billingAddress: Address;

@@ -1,17 +1,31 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
 
-const listUser = async (req: any, res: Response, next: NextFunction) => {
+const listUser = async (req: Request, res: Response) => {
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.user.count();
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
   const users = await prismaClient.user.findMany({
-    skip: +req.query.skip || 0,
-    take: 10,
+    skip: startIndex,
+    take: Number(limit),
   });
-  res.json(users);
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: users,
+  });
 };
 
-const getUserByID = async (req: Request, res: Response, next: NextFunction) => {
+const getUserByID = async (req: Request, res: Response) => {
   try {
     const users = await prismaClient.user.findFirstOrThrow({
       where: {
@@ -21,17 +35,13 @@ const getUserByID = async (req: Request, res: Response, next: NextFunction) => {
         addresss: true,
       },
     });
-    res.json(users);
+    res.json({ message: true, data: users });
   } catch (err) {
     throw new NotFoundException("User not found", ErrorCode.USER_NOT_FOUND);
   }
 };
 
-const changeUserRole = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const changeUserRole = async (req: Request, res: Response) => {
   try {
     const users = await prismaClient.user.update({
       where: {
@@ -41,17 +51,13 @@ const changeUserRole = async (
         role: req.body.role,
       },
     });
-    res.json(users);
+    res.json({ message: true, dat: users });
   } catch (err) {
     throw new NotFoundException("User not found", ErrorCode.USER_NOT_FOUND);
   }
 };
 
-const updateOrderStatus = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const updateOrderStatus = async (req: Request, res: Response) => {
   try {
     const order = await prismaClient.order.update({
       where: {
@@ -67,12 +73,12 @@ const updateOrderStatus = async (
         status: req.body.status,
       },
     });
-    res.json(order);
+    res.json({ message: true, data: order });
   } catch (err) {
     throw new NotFoundException("Order not found", ErrorCode.USER_NOT_FOUND);
   }
 };
-const listOrders = async (req: Request, res: Response, next: NextFunction) => {
+const listOrders = async (req: Request, res: Response) => {
   let whereClause: any = {};
   const status = req.query.status;
   const userId = Number(req.query.userId);
@@ -82,13 +88,29 @@ const listOrders = async (req: Request, res: Response, next: NextFunction) => {
   if (userId) {
     whereClause = { ...whereClause, userId };
   }
+
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.order.count();
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
+
   const orders = await prismaClient.order.findMany({
     where: whereClause,
-    skip: Number(req.query.skip) || 0,
-    take: 10,
+    skip: startIndex,
+    take: Number(limit),
   });
 
-  res.json(orders);
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: orders,
+  });
 };
 
 export { listUser, getUserByID, changeUserRole, listOrders, updateOrderStatus };
