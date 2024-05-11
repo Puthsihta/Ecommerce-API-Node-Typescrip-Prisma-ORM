@@ -8,6 +8,7 @@ import { ErrorCode } from "../errors/root.excpetion";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { RegisterSchema, UpdateUserSchema } from "../schemas/user";
 import { Address } from "@prisma/client";
+import { Role } from "../constants/index.constants";
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   RegisterSchema.parse(req.body);
@@ -51,7 +52,7 @@ const loginUser = async (req: Request, res: Response) => {
       ErrorCode.INCORRECT_PASSWORD
     );
   }
-  if (user.role !== "USER") {
+  if (user.role !== Role.user) {
     throw new BadRequestException(
       "This is an admin account! Not a user account!",
       ErrorCode.UNPROCESSABLE
@@ -77,7 +78,7 @@ const loginAdmin = async (req: Request, res: Response) => {
       ErrorCode.INCORRECT_PASSWORD
     );
   }
-  if (user.role !== "ADMIN") {
+  if (user.role !== Role.admin) {
     throw new BadRequestException(
       "This is a user account! Not an admin account!",
       ErrorCode.UNPROCESSABLE

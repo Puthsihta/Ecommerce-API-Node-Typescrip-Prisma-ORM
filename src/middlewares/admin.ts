@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { UnAuthorizedException } from "../errors/unauthorized.expcetion";
 import { ErrorCode } from "../errors/root.excpetion";
+import { Role } from "../constants/index.constants";
 
 const adminMiddleware: any = async (
   req: Request,
@@ -8,7 +9,7 @@ const adminMiddleware: any = async (
   next: NextFunction
 ) => {
   const user = req.user;
-  if (user.role == "ADMIN") {
+  if (user.role == Role.admin) {
     next();
   } else {
     next(

@@ -2,18 +2,26 @@ import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
+import { Role } from "../constants/index.constants";
 
 const listUser = async (req: Request, res: Response) => {
   // pagenation
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
   const startIndex = (Number(page) - 1) * Number(limit);
-  const totalCount = await prismaClient.user.count();
+  const totalCount = await prismaClient.user.count({
+    where: {
+      role: req.query.role ? String(req.query.role) : Role.user,
+    },
+  });
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
   const users = await prismaClient.user.findMany({
     skip: startIndex,
     take: Number(limit),
+    where: {
+      role: req.query.role ? String(req.query.role) : Role.user,
+    },
   });
   res.json({
     message: true,
