@@ -11,7 +11,7 @@ import { Address } from "@prisma/client";
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   RegisterSchema.parse(req.body);
-  const { email, password, name } = req.body;
+  const { email, password, name, role } = req.body;
   let user = await prismaClient.user.findFirst({ where: { email } });
   if (user) {
     next(
@@ -25,6 +25,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     data: {
       name,
       email,
+      role,
       password: hashSync(password, 10),
     },
   });
@@ -33,7 +34,8 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 
   res.json({ user, token });
 };
-const login = async (req: Request, res: Response) => {
+
+const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   let user = await prismaClient.user.findFirst({ where: { email } });
@@ -47,6 +49,38 @@ const login = async (req: Request, res: Response) => {
     throw new BadRequestException(
       "Incorrect password",
       ErrorCode.INCORRECT_PASSWORD
+    );
+  }
+  if (user.role !== "USER") {
+    throw new BadRequestException(
+      "This is an admin account! Not a user account!",
+      ErrorCode.UNPROCESSABLE
+    );
+  }
+  const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
+
+  res.json({ user, token });
+};
+const loginAdmin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  let user = await prismaClient.user.findFirst({ where: { email } });
+  if (!user) {
+    throw new NotFoundException(
+      `User doesn't exists`,
+      ErrorCode.USER_NOT_FOUND
+    );
+  }
+  if (!compareSync(password, user.password)) {
+    throw new BadRequestException(
+      "Incorrect password",
+      ErrorCode.INCORRECT_PASSWORD
+    );
+  }
+  if (user.role !== "ADMIN") {
+    throw new BadRequestException(
+      "This is a user account! Not an admin account!",
+      ErrorCode.UNPROCESSABLE
     );
   }
   const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
@@ -108,4 +142,4 @@ const updateProfile = async (req: any, res: Response) => {
   res.json(updateUser);
 };
 
-export { login, register, profile, updateProfile };
+export { loginUser, loginAdmin, register, profile, updateProfile };

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
-  login,
+  loginUser,
+  loginAdmin,
   profile,
   register,
   updateProfile,
@@ -11,7 +12,8 @@ import authMiddleware from "../middlewares/auth";
 const authRoute: Router = Router();
 
 authRoute.post("/register", errorHandler(register));
-authRoute.post("/login", errorHandler(login));
+authRoute.post("/login-user", errorHandler(loginUser));
+authRoute.post("/login-admin", errorHandler(loginAdmin));
 authRoute.get("/profile", [authMiddleware], errorHandler(profile));
 authRoute.put("/update-user", [authMiddleware], errorHandler(updateProfile));
 
