@@ -13,7 +13,18 @@ import { Role } from "../constants/index.constants";
 const register = async (req: Request, res: Response, next: NextFunction) => {
   RegisterSchema.parse(req.body);
   const { email, password, name, role } = req.body;
-  let user = await prismaClient.user.findFirst({ where: { email } });
+  let user = await prismaClient.user.findFirst({
+    where: { email },
+    select: {
+      id: true,
+      password: false,
+      addresss: false,
+      name: true,
+      email: true,
+      role: true,
+      image_url: true,
+    },
+  });
   if (user) {
     next(
       new BadRequestException(
@@ -30,16 +41,28 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       password: hashSync(password, 10),
     },
   });
-
   const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
-
-  res.json({ user, token });
+  let respone = await prismaClient.user.findFirst({
+    where: { email },
+    select: {
+      id: true,
+      password: false,
+      addresss: false,
+      name: true,
+      email: true,
+      role: true,
+      image_url: true,
+    },
+  });
+  res.json({ message: true, token, data: respone });
 };
 
 const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-  let user = await prismaClient.user.findFirst({ where: { email } });
+  let user = await prismaClient.user.findFirst({
+    where: { email },
+  });
   if (!user) {
     throw new NotFoundException(
       `User doesn't exists`,
@@ -58,9 +81,21 @@ const loginUser = async (req: Request, res: Response) => {
       ErrorCode.UNPROCESSABLE
     );
   }
+  let respone = await prismaClient.user.findFirst({
+    where: { email },
+    select: {
+      id: true,
+      password: false,
+      addresss: false,
+      name: true,
+      email: true,
+      role: true,
+      image_url: true,
+    },
+  });
   const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
 
-  res.json({ user, token });
+  res.json({ message: true, token, data: respone });
 };
 const loginAdmin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -84,12 +119,36 @@ const loginAdmin = async (req: Request, res: Response) => {
       ErrorCode.UNPROCESSABLE
     );
   }
+  let respone = await prismaClient.user.findFirst({
+    where: { email },
+    select: {
+      id: true,
+      password: false,
+      addresss: false,
+      name: true,
+      email: true,
+      role: true,
+      image_url: true,
+    },
+  });
   const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
 
-  res.json({ user, token });
+  res.json({ message: true, token, data: respone });
 };
 const profile = async (req: Request, res: Response) => {
-  res.json(req.user);
+  let respone = await prismaClient.user.findFirst({
+    where: { email: req.params.email },
+    select: {
+      id: true,
+      password: false,
+      name: true,
+      email: true,
+      role: true,
+      image_url: true,
+      addresss: true,
+    },
+  });
+  res.json({ message: true, data: respone });
 };
 
 const updateProfile = async (req: Request, res: Response) => {
@@ -138,9 +197,18 @@ const updateProfile = async (req: Request, res: Response) => {
       id: req.user.id,
     },
     data: validation,
+    select: {
+      id: true,
+      password: false,
+      addresss: false,
+      name: true,
+      email: true,
+      role: true,
+      image_url: true,
+    },
   });
 
-  res.json(updateUser);
+  res.json({ mesage: true, data: updateUser });
 };
 
 export { loginUser, loginAdmin, register, profile, updateProfile };

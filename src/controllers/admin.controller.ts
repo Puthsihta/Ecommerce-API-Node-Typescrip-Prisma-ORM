@@ -22,6 +22,15 @@ const listUser = async (req: Request, res: Response) => {
     where: {
       role: req.query.role ? String(req.query.role) : Role.user,
     },
+    select: {
+      id: true,
+      password: false,
+      addresss: false,
+      name: true,
+      email: true,
+      role: true,
+      image_url: true,
+    },
   });
   res.json({
     message: true,
@@ -39,7 +48,13 @@ const getUserByID = async (req: Request, res: Response) => {
       where: {
         id: +req.params.id,
       },
-      include: {
+      select: {
+        id: true,
+        password: false,
+        name: true,
+        email: true,
+        role: true,
+        image_url: true,
         addresss: true,
       },
     });
@@ -57,6 +72,15 @@ const changeUserRole = async (req: Request, res: Response) => {
       },
       data: {
         role: req.body.role,
+      },
+      select: {
+        id: true,
+        password: false,
+        addresss: false,
+        name: true,
+        email: true,
+        role: true,
+        image_url: true,
       },
     });
     res.json({ message: true, dat: users });
