@@ -14,6 +14,7 @@ const adminMiddleware = async (
   } else {
     next(
       new UnAuthorizedException(
+        false,
         "Unauthorized, This User is not Admin",
         ErrorCode.UNAUTHORIZED
       )

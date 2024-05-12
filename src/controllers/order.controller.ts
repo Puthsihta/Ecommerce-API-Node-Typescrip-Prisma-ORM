@@ -105,6 +105,7 @@ const cancelStatus = async (req: Request, res: Response) => {
     res.json({ message: true, data: order });
   } catch (err) {
     throw new NotFoundException(
+      false,
       "Product not found",
       ErrorCode.PRODUCT_NOT_FOUNT
     );
@@ -123,7 +124,11 @@ const listOrderById = async (req: Request, res: Response) => {
     });
     res.json({ message: true, data: order });
   } catch (err) {
-    throw new NotFoundException("Order not found", ErrorCode.PRODUCT_NOT_FOUNT);
+    throw new NotFoundException(
+      false,
+      "Order not found",
+      ErrorCode.PRODUCT_NOT_FOUNT
+    );
   }
 };
 

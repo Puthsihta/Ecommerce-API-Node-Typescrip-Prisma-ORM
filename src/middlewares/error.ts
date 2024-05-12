@@ -11,5 +11,6 @@ export const errorMiddleware = (
     message: error.message,
     errorCode: error.errorCode,
     error: error.error,
+    data: error.data,
   });
 };

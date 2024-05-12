@@ -9,11 +9,10 @@ export const errorHandler: any = (method: Function) => {
     } catch (err: any) {
       let exception: HTTPException;
       if (err instanceof HTTPException) {
-        // console.log("IN err instanceof HTTPException");
         exception = err;
       } else {
-        // console.log("IN InternalException");
         exception = new InternalException(
+          false,
           "Something went wrong",
           err,
           ErrorCode.INTERNAL_ERROR

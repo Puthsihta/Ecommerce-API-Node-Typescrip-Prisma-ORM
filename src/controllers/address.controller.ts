@@ -53,6 +53,7 @@ const deleteAddress = async (req: Request, res: Response) => {
     res.json({ message: true, data: "Address deleted successfully" });
   } catch (err) {
     throw new NotFoundException(
+      false,
       "Address not found",
       ErrorCode.PRODUCT_NOT_FOUNT
     );

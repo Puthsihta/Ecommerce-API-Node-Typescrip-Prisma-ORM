@@ -44,6 +44,7 @@ const listProductByID = async (req: Request, res: Response) => {
     res.json({ message: true, data: product });
   } catch (err) {
     throw new NotFoundException(
+      false,
       "Product not found",
       ErrorCode.PRODUCT_NOT_FOUNT
     );
@@ -65,6 +66,7 @@ const updateProduct = async (req: Request, res: Response) => {
     res.json({ message: true, data: updateProduct });
   } catch (err) {
     throw new NotFoundException(
+      false,
       "Product not found",
       ErrorCode.PRODUCT_NOT_FOUNT
     );
@@ -81,6 +83,7 @@ const deleteProduct = async (req: Request, res: Response) => {
     res.json({ message: true, data: "Product deleted successfully" });
   } catch (err) {
     throw new NotFoundException(
+      false,
       "Product not found",
       ErrorCode.PRODUCT_NOT_FOUNT
     );

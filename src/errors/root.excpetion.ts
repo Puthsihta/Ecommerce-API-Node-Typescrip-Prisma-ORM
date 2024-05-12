@@ -1,17 +1,19 @@
-export class HTTPException extends Error {
-  message: string;
+export class HTTPException {
+  message: boolean;
+  data: string;
   errorCode: any;
   statusCode: number;
   error: ErrorCode;
 
   constructor(
-    message: string,
+    message: boolean,
+    data: string,
     errorCode: ErrorCode,
     statusCode: number,
     error: any
   ) {
-    super(message);
     this.message = message;
+    this.data = data;
     this.errorCode = errorCode;
     this.statusCode = statusCode;
     this.error = error;

@@ -28,6 +28,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   if (user) {
     next(
       new BadRequestException(
+        false,
         "User already exists",
         ErrorCode.USER_ALREADY_EXIST
       )
@@ -65,18 +66,21 @@ const loginUser = async (req: Request, res: Response) => {
   });
   if (!user) {
     throw new NotFoundException(
+      false,
       `User doesn't exists`,
       ErrorCode.USER_NOT_FOUND
     );
   }
   if (!compareSync(password, user.password)) {
     throw new BadRequestException(
+      false,
       "Incorrect password",
       ErrorCode.INCORRECT_PASSWORD
     );
   }
   if (user.role !== Role.user) {
     throw new BadRequestException(
+      false,
       "This is an admin account! Not a user account!",
       ErrorCode.UNPROCESSABLE
     );
@@ -103,18 +107,21 @@ const loginAdmin = async (req: Request, res: Response) => {
   let user = await prismaClient.user.findFirst({ where: { email } });
   if (!user) {
     throw new NotFoundException(
+      false,
       `User doesn't exists`,
       ErrorCode.USER_NOT_FOUND
     );
   }
   if (!compareSync(password, user.password)) {
     throw new BadRequestException(
+      false,
       "Incorrect password",
       ErrorCode.INCORRECT_PASSWORD
     );
   }
   if (user.role !== Role.admin) {
     throw new BadRequestException(
+      false,
       "This is a user account! Not an admin account!",
       ErrorCode.UNPROCESSABLE
     );
@@ -162,12 +169,14 @@ const updateProfile = async (req: Request, res: Response) => {
       });
     } catch (err) {
       throw new NotFoundException(
+        false,
         "Address not found",
         ErrorCode.PRODUCT_NOT_FOUNT
       );
     }
     if (shippingAddress.userId != req.user.id) {
       throw new BadRequestException(
+        false,
         "Address does not belong to the user",
         ErrorCode.UNPROCESSABLE
       );
@@ -181,12 +190,14 @@ const updateProfile = async (req: Request, res: Response) => {
       });
     } catch (err) {
       throw new NotFoundException(
+        false,
         "Address not found",
         ErrorCode.PRODUCT_NOT_FOUNT
       );
     }
     if (billingAddress.userId != req.user.id) {
       throw new BadRequestException(
+        false,
         "Address does not belong to the user",
         ErrorCode.UNPROCESSABLE
       );

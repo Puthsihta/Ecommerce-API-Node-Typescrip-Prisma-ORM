@@ -12,7 +12,9 @@ const authMiddleware = async (
 ) => {
   const token: any = req.headers.authorization;
   if (!token) {
-    next(new UnAuthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));
+    next(
+      new UnAuthorizedException(false, "Unauthorized", ErrorCode.UNAUTHORIZED)
+    );
   }
   try {
     const payload = jwt.verify(token, JWT_SECRET) as any;
@@ -20,12 +22,16 @@ const authMiddleware = async (
       where: { id: payload.user_id },
     });
     if (!user) {
-      next(new UnAuthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));
+      next(
+        new UnAuthorizedException(false, "Unauthorized", ErrorCode.UNAUTHORIZED)
+      );
     }
     req.user = user;
     next();
   } catch (err) {
-    next(new UnAuthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));
+    next(
+      new UnAuthorizedException(false, "Unauthorized", ErrorCode.UNAUTHORIZED)
+    );
   }
 };
 
