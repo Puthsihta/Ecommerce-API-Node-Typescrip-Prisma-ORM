@@ -5,7 +5,7 @@ import * as jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../secret";
 import { prismaClient } from "..";
 
-const authMiddleware: any = async (
+const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction

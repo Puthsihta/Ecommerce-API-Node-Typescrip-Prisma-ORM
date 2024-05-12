@@ -3,7 +3,7 @@ import { UnAuthorizedException } from "../errors/unauthorized.expcetion";
 import { ErrorCode } from "../errors/root.excpetion";
 import { Role } from "../constants/index.constants";
 
-const adminMiddleware: any = async (
+const adminMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
