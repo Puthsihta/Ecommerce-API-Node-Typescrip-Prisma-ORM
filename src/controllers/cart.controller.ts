@@ -23,7 +23,7 @@ const addCart = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(addCart);
+    res.json({ message: true, data: addCart });
   } catch (err) {
     throw new NotFoundException(
       "Product not found",
@@ -39,7 +39,7 @@ const deleteCart = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({ message: "Cart deleted successfully" });
+    res.json({ message: true, data: "Cart deleted successfully" });
   } catch (err) {
     throw new NotFoundException(
       "Product not found",
@@ -59,7 +59,7 @@ const changeQty = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(updateQty);
+    res.json({ messag: true, data: updateQty });
   } catch (err) {
     throw new NotFoundException(
       "Product not found",
