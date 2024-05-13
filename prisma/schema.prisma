@@ -10,13 +10,6 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
-enum OrderStatus {
-  PENDING
-  CONFIRM
-  DELIVERY
-  CANCEL
-  COMPLETE
-}
 
 model User{
   id Int @id @default(autoincrement())
@@ -89,7 +82,7 @@ model Order{
   user User @relation(fields: [userId], references: [id])
   amount Decimal
   address String
-  status OrderStatus @default(PENDING)
+  status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -116,7 +109,7 @@ model OrderEvent{
   id Int @id @default(autoincrement())
   orderId Int
   order Order @relation(fields: [orderId], references: [id])
-  status OrderStatus @default(PENDING)
+  status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

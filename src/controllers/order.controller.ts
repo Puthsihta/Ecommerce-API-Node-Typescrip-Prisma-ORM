@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
+import { OrderStatus } from "../constants/index.constants";
 
 const createOrder = async (req: Request, res: Response) => {
   // 1. create transaction
@@ -16,11 +17,15 @@ const createOrder = async (req: Request, res: Response) => {
       },
     });
     if (cart.length == 0) {
-      return res.json({ message: "cart is empty" });
+      throw new NotFoundException(
+        false,
+        "Cart is Empty",
+        ErrorCode.PRODUCT_NOT_FOUNT
+      );
     }
     // 3. calculate total amount
     const price = cart.reduce((prev, current) => {
-      return prev + current.qty * +current.product.price;
+      return prev + current.qty * Number(current.product.price);
     }, 0);
     // 4. fetch user addresss
     const address = await tx.address.findFirst({
@@ -46,7 +51,7 @@ const createOrder = async (req: Request, res: Response) => {
       },
     });
     // 7. order even
-    const orderEven = await tx.orderEvent.create({
+    await tx.orderEvent.create({
       data: {
         orderId: order.id,
       },
@@ -57,7 +62,7 @@ const createOrder = async (req: Request, res: Response) => {
         userId: req.user.id,
       },
     });
-    return res.json({ message: true, data: order });
+    return res.json({ message: true, data: "Order Successfully!" });
   });
 };
 const listOder = async (req: Request, res: Response) => {
@@ -93,13 +98,13 @@ const cancelStatus = async (req: Request, res: Response) => {
         id: +req.params.id,
       },
       data: {
-        status: "CANCEL",
+        status: OrderStatus.CANCEL,
       },
     });
     await prismaClient.orderEvent.create({
       data: {
         orderId: +req.params.id,
-        status: "CANCEL",
+        status: OrderStatus.CANCEL,
       },
     });
     res.json({ message: true, data: order });

@@ -52,7 +52,7 @@ const deleteCart = async (req: Request, res: Response) => {
 const changeQty = async (req: Request, res: Response) => {
   const validation = UpdateQtySchema.parse(req.body);
   try {
-    const updateQty = await prismaClient.cart.update({
+    await prismaClient.cart.update({
       where: {
         id: +req.params.id,
       },
@@ -61,7 +61,7 @@ const changeQty = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({ messag: true, data: updateQty });
+    res.json({ messag: true, data: "Qty change successfully!" });
   } catch (err) {
     throw new NotFoundException(
       false,
