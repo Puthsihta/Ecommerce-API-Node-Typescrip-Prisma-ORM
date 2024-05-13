@@ -68,7 +68,7 @@ const loginUser = async (req: Request, res: Response) => {
     throw new NotFoundException(
       false,
       `User doesn't exists`,
-      ErrorCode.USER_NOT_FOUND
+      ErrorCode.NOT_FOUNT
     );
   }
   if (!compareSync(password, user.password)) {
@@ -109,7 +109,7 @@ const loginAdmin = async (req: Request, res: Response) => {
     throw new NotFoundException(
       false,
       `User doesn't exists`,
-      ErrorCode.USER_NOT_FOUND
+      ErrorCode.NOT_FOUNT
     );
   }
   if (!compareSync(password, user.password)) {
@@ -171,7 +171,7 @@ const updateProfile = async (req: Request, res: Response) => {
       throw new NotFoundException(
         false,
         "Address not found",
-        ErrorCode.PRODUCT_NOT_FOUNT
+        ErrorCode.NOT_FOUNT
       );
     }
     if (shippingAddress.userId != req.user.id) {
@@ -192,7 +192,7 @@ const updateProfile = async (req: Request, res: Response) => {
       throw new NotFoundException(
         false,
         "Address not found",
-        ErrorCode.PRODUCT_NOT_FOUNT
+        ErrorCode.NOT_FOUNT
       );
     }
     if (billingAddress.userId != req.user.id) {

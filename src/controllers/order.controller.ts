@@ -17,11 +17,7 @@ const createOrder = async (req: Request, res: Response) => {
       },
     });
     if (cart.length == 0) {
-      throw new NotFoundException(
-        false,
-        "Cart is Empty",
-        ErrorCode.PRODUCT_NOT_FOUNT
-      );
+      throw new NotFoundException(false, "Cart is Empty", ErrorCode.NOT_FOUNT);
     }
     // 3. calculate total amount
     const price = cart.reduce((prev, current) => {
@@ -112,7 +108,7 @@ const cancelStatus = async (req: Request, res: Response) => {
     throw new NotFoundException(
       false,
       "Product not found",
-      ErrorCode.PRODUCT_NOT_FOUNT
+      ErrorCode.NOT_FOUNT
     );
   }
 };
@@ -129,11 +125,7 @@ const listOrderById = async (req: Request, res: Response) => {
     });
     res.json({ message: true, data: order });
   } catch (err) {
-    throw new NotFoundException(
-      false,
-      "Order not found",
-      ErrorCode.PRODUCT_NOT_FOUNT
-    );
+    throw new NotFoundException(false, "Order not found", ErrorCode.NOT_FOUNT);
   }
 };
 

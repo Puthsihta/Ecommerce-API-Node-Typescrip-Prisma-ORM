@@ -55,7 +55,7 @@ const deleteAddress = async (req: Request, res: Response) => {
     throw new NotFoundException(
       false,
       "Address not found",
-      ErrorCode.PRODUCT_NOT_FOUNT
+      ErrorCode.NOT_FOUNT
     );
   }
 };

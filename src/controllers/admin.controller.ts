@@ -60,11 +60,7 @@ const getUserByID = async (req: Request, res: Response) => {
     });
     res.json({ message: true, data: users });
   } catch (err) {
-    throw new NotFoundException(
-      false,
-      "User not found",
-      ErrorCode.USER_NOT_FOUND
-    );
+    throw new NotFoundException(false, "User not found", ErrorCode.NOT_FOUNT);
   }
 };
 
@@ -89,11 +85,7 @@ const changeUserRole = async (req: Request, res: Response) => {
     });
     res.json({ message: true, dat: users });
   } catch (err) {
-    throw new NotFoundException(
-      false,
-      "User not found",
-      ErrorCode.USER_NOT_FOUND
-    );
+    throw new NotFoundException(false, "User not found", ErrorCode.NOT_FOUNT);
   }
 };
 
@@ -115,11 +107,7 @@ const updateOrderStatus = async (req: Request, res: Response) => {
     });
     res.json({ message: true, data: order });
   } catch (err) {
-    throw new NotFoundException(
-      false,
-      "Order not found",
-      ErrorCode.USER_NOT_FOUND
-    );
+    throw new NotFoundException(false, "Order not found", ErrorCode.NOT_FOUNT);
   }
 };
 const listOrders = async (req: Request, res: Response) => {

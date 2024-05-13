@@ -28,7 +28,7 @@ const addCart = async (req: Request, res: Response) => {
     throw new NotFoundException(
       false,
       "Product not found",
-      ErrorCode.PRODUCT_NOT_FOUNT
+      ErrorCode.NOT_FOUNT
     );
   }
 };
@@ -45,7 +45,7 @@ const deleteCart = async (req: Request, res: Response) => {
     throw new NotFoundException(
       false,
       "Product not found",
-      ErrorCode.PRODUCT_NOT_FOUNT
+      ErrorCode.NOT_FOUNT
     );
   }
 };
@@ -66,7 +66,7 @@ const changeQty = async (req: Request, res: Response) => {
     throw new NotFoundException(
       false,
       "Product not found",
-      ErrorCode.PRODUCT_NOT_FOUNT
+      ErrorCode.NOT_FOUNT
     );
   }
 };
