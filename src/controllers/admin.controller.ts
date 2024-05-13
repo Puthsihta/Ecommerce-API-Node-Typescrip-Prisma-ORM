@@ -123,7 +123,7 @@ const updateOrderStatus = async (req: Request, res: Response) => {
   }
 };
 const listOrders = async (req: Request, res: Response) => {
-  let whereClause: any = {};
+  let whereClause = {};
   const status = req.query.status;
   const userId = Number(req.query.userId);
   if (status) {
