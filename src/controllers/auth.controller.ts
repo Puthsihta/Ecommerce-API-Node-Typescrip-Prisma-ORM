@@ -144,7 +144,7 @@ const loginAdmin = async (req: Request, res: Response) => {
 };
 const profile = async (req: Request, res: Response) => {
   let respone = await prismaClient.user.findFirst({
-    where: { email: req.params.email },
+    where: { id: req.user.id },
     select: {
       id: true,
       password: false,
