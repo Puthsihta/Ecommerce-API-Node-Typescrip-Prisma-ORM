@@ -7,13 +7,12 @@ export const RegisterSchema = z.object({
 });
 
 export const AddressSchema = z.object({
-  street: z.string(),
-  city: z.string(),
-  country: z.string(),
+  name: z.string(),
+  address: z.string(),
+  latitude: z.string(),
+  longitude: z.string(),
 });
 
 export const UpdateUserSchema = z.object({
   name: z.string().optional(),
-  defaultShippinAddress: z.number().optional(),
-  defaultBillingAddress: z.number().optional(),
 });

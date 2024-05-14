@@ -160,49 +160,6 @@ const profile = async (req: Request, res: Response) => {
 
 const updateProfile = async (req: Request, res: Response) => {
   const validation = (await UpdateUserSchema.parse(req.body)) as any;
-  let shippingAddress: Address;
-  let billingAddress: Address;
-  if (validation.defaultShippinAddress) {
-    try {
-      shippingAddress = await prismaClient.address.findFirstOrThrow({
-        where: { id: validation.defaultShippinAddress },
-      });
-    } catch (err) {
-      throw new NotFoundException(
-        false,
-        "Address not found",
-        ErrorCode.NOT_FOUNT
-      );
-    }
-    if (shippingAddress.userId != req.user.id) {
-      throw new BadRequestException(
-        false,
-        "Address does not belong to the user",
-        ErrorCode.UNPROCESSABLE
-      );
-    }
-  }
-
-  if (validation.defaultBillingAddress) {
-    try {
-      billingAddress = await prismaClient.address.findFirstOrThrow({
-        where: { id: validation.defaultBillingAddress },
-      });
-    } catch (err) {
-      throw new NotFoundException(
-        false,
-        "Address not found",
-        ErrorCode.NOT_FOUNT
-      );
-    }
-    if (billingAddress.userId != req.user.id) {
-      throw new BadRequestException(
-        false,
-        "Address does not belong to the user",
-        ErrorCode.UNPROCESSABLE
-      );
-    }
-  }
   const updateUser = await prismaClient.user.update({
     where: {
       id: req.user.id,

@@ -11,6 +11,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
 model User{
   id Int @id @default(autoincrement())
   name String
@@ -20,30 +21,28 @@ model User{
   image_url String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  defaultShippinAddress Int?
-  defaultBillingAddress Int?
 
   addresss Address[]
   carts Cart[]
   oreders Order[]
+
   
   @@map("users")
 }
 
 model Address{
   id Int @id @default(autoincrement())
-  street String
-  city String
-  country String
+  name String
+  address String
   latitude String
   longitude String
-  name String
   userId Int
   user User @relation(fields: [userId], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   @@map("addresses")
+  order Order[]
 }
 
 model Product{
@@ -81,7 +80,8 @@ model Order{
   userId Int
   user User @relation(fields: [userId], references: [id])
   amount Decimal
-  address String
+  addressId Int
+  address Address @relation(fields: [addressId], references: [id])
   status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

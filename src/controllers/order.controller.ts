@@ -26,7 +26,7 @@ const createOrder = async (req: Request, res: Response) => {
     // 4. fetch user addresss
     const address = await tx.address.findFirst({
       where: {
-        id: req.user.defaultShippinAddress ?? 1,
+        id: req.body.addressId,
       },
     });
     //6. creaet order
@@ -35,7 +35,8 @@ const createOrder = async (req: Request, res: Response) => {
         userId: req.user.id,
         amount: price,
         // 5. define formatedAddress in index.ts (extent prisma)
-        address: String(address?.formattedAddress),
+        addressId: Number(address?.id),
+        // address: String(address?.formattedAddress),
         products: {
           create: cart.map((cart) => {
             return {
