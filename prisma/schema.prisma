@@ -63,14 +63,16 @@ model Order{
   id Int @id @default(autoincrement())
   userId Int
   user User @relation(fields: [userId], references: [id])
-  amount Decimal
+  total Decimal?
+  total_item Int?
+  invoice_no String @default("0001")
   addressId Int
   address Address @relation(fields: [addressId], references: [id])
   status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  products OrderProduct[]
+  product_data OrderProduct[]
   events OrderEvent[]
 
   @@map("orders")
@@ -82,7 +84,8 @@ model OrderProduct{
   order Order @relation(fields: [orderId], references: [id])
   productId Int
   product Product @relation(fields: [productId], references: [id])
-  qty Int
+  quantity Int @default(1)
+  sub_total Decimal?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
