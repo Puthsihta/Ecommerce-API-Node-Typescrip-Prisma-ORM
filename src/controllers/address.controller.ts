@@ -42,6 +42,21 @@ const listAddress = async (req: Request, res: Response) => {
   });
 };
 
+const updateAddress = async (req: Request, res: Response) => {
+  AddressSchema.parse(req.body);
+  await prismaClient.address.update({
+    where: {
+      id: +req.params.id,
+      userId: req.user.id,
+    },
+    data: {
+      ...req.body,
+    },
+  });
+
+  res.json({ message: true, data: "Updated Address Successfully!" });
+};
+
 const deleteAddress = async (req: Request, res: Response) => {
   try {
     await prismaClient.address.delete({
@@ -60,4 +75,4 @@ const deleteAddress = async (req: Request, res: Response) => {
   }
 };
 
-export { createAddress, listAddress, deleteAddress };
+export { createAddress, listAddress, updateAddress, deleteAddress };
