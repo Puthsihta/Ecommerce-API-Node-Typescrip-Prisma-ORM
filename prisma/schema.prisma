@@ -24,7 +24,7 @@ model User{
 
   addresss Address[]
   oreders Order[]
-
+  paymentMethods PaymentMethod[]
   
   @@map("users")
 }
@@ -66,8 +66,11 @@ model Order{
   total Decimal?
   total_item Int?
   invoice_no String @default("0001")
+  remarks String? 
   addressId Int
   address Address @relation(fields: [addressId], references: [id])
+  paymentId Int
+  payment_method PaymentMethod @relation(fields: [paymentId], references: [id])
   status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -86,6 +89,7 @@ model OrderProduct{
   product Product @relation(fields: [productId], references: [id])
   quantity Int @default(1)
   sub_total Decimal?
+  noted String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -101,4 +105,19 @@ model OrderEvent{
   updated_at DateTime @updatedAt
 
   @@map("order_events")
+}
+
+model PaymentMethod{
+  id Int @id @default(autoincrement())
+  orderId Int
+  name String
+  description String
+  type String
+  image_url String?
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  order Order[]
 }

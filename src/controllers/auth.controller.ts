@@ -12,7 +12,7 @@ import { Role } from "../constants/index.constants";
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   RegisterSchema.parse(req.body);
-  const { email, password, name, role } = req.body;
+  const { email, password, name, role, image_url } = req.body;
   let user = await prismaClient.user.findFirst({
     where: { email },
     select: {
@@ -39,6 +39,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       name,
       email,
       role,
+      image_url,
       password: hashSync(password, 10),
     },
   });

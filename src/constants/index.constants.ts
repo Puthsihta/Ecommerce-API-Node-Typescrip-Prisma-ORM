@@ -9,3 +9,7 @@ export const OrderStatus = {
   CANCEL: 4,
   COMPLETE: 5,
 };
+export const PaymentMethodType = {
+  CASE_ON_HAND: "case_on_hand",
+  BANK: "bank",
+};

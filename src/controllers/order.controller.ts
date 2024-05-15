@@ -8,18 +8,26 @@ import { OrderProduct } from "@prisma/client";
 
 const createOrder = async (req: Request, res: Response) => {
   CreatOrderSchema.parse(req.body);
-  const { product, addressId } = req.body;
+  const { product, addressId, paymentId } = req.body;
   // fetch addresss
   const address = await prismaClient.address.findFirst({
     where: {
       id: addressId,
     },
   });
-  if (address) {
+  console.log("address : ", address);
+  //fetch payment methods
+  const payment = await prismaClient.paymentMethod.findFirst({
+    where: {
+      id: paymentId,
+    },
+  });
+  if (address && payment) {
     const order = await prismaClient.order.create({
       data: {
         userId: req.user.id,
         addressId: address.id,
+        paymentId: payment?.id,
         total_item: product.length,
       },
     });
@@ -52,7 +60,6 @@ const createOrder = async (req: Request, res: Response) => {
     await prismaClient.orderProduct.createMany({
       data: orderProducts,
     });
-
     //caculate total of the products order
     let total = 0;
     orderProducts.map((item) => {

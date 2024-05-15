@@ -8,9 +8,5 @@ export const CreatOrderSchema = z.object({
     })
   ),
   addressId: z.number(),
-  // paymentMethod: z.object({
-  //   id: z.number(),
-  //   name: z.string(),
-  //   type: z.string(),
-  // }),
+  paymentId: z.number(),
 });
