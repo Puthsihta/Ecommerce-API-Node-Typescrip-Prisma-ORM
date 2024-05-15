@@ -3,8 +3,10 @@ import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
 import { OrderStatus } from "../constants/index.constants";
+import { CreatOrderSchema } from "../schemas/order";
 
 const createOrder = async (req: Request, res: Response) => {
+  CreatOrderSchema.parse(req.body);
   // 1. create transaction
   await prismaClient.$transaction(async (tx) => {
     // 2. list all cart
@@ -29,37 +31,46 @@ const createOrder = async (req: Request, res: Response) => {
         id: req.body.addressId,
       },
     });
-    //6. creaet order
-    const order = await tx.order.create({
-      data: {
-        userId: req.user.id,
-        amount: price,
-        // 5. define formatedAddress in index.ts (extent prisma)
-        addressId: Number(address?.id),
-        // address: String(address?.formattedAddress),
-        products: {
-          create: cart.map((cart) => {
-            return {
-              productId: cart.productId,
-              qty: cart.qty,
-            };
-          }),
+
+    if (address) {
+      //6. creaet order
+      const order = await tx.order.create({
+        data: {
+          userId: req.user.id,
+          amount: price,
+          // 5. define formatedAddress in index.ts (extent prisma)
+          addressId: address.id,
+          // address: String(address?.formattedAddress),
+          products: {
+            create: cart.map((cart) => {
+              return {
+                productId: cart.productId,
+                qty: cart.qty,
+              };
+            }),
+          },
         },
-      },
-    });
-    // 7. order even
-    await tx.orderEvent.create({
-      data: {
-        orderId: order.id,
-      },
-    });
-    //8. empty cart
-    await tx.cart.deleteMany({
-      where: {
-        userId: req.user.id,
-      },
-    });
-    return res.json({ message: true, data: "Order Successfully!" });
+      });
+      // 7. order even
+      await tx.orderEvent.create({
+        data: {
+          orderId: order.id,
+        },
+      });
+      //8. empty cart
+      await tx.cart.deleteMany({
+        where: {
+          userId: req.user.id,
+        },
+      });
+      return res.json({ message: true, data: "Order Successfully!" });
+    } else {
+      throw new NotFoundException(
+        false,
+        "Address Not Found",
+        ErrorCode.NOT_FOUNT
+      );
+    }
   });
 };
 const listOder = async (req: Request, res: Response) => {
@@ -122,6 +133,7 @@ const listOrderById = async (req: Request, res: Response) => {
       include: {
         products: true,
         events: true,
+        address: true,
       },
     });
     res.json({ message: true, data: order });

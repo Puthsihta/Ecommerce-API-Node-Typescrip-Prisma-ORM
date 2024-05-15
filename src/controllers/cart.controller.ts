@@ -23,7 +23,7 @@ const addCart = async (req: Request, res: Response) => {
       },
     });
 
-    res.json({ message: true, data: addCart });
+    res.json({ message: true, data: "Cart Add Succefully" });
   } catch (err) {
     throw new NotFoundException(
       false,
