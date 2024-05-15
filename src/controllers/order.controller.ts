@@ -15,32 +15,48 @@ const createOrder = async (req: Request, res: Response) => {
       id: addressId,
     },
   });
-  console.log("address : ", address);
   //fetch payment methods
   const payment = await prismaClient.paymentMethod.findFirst({
     where: {
       id: paymentId,
     },
   });
+  // check if address & payment have
   if (address && payment) {
-    const order = await prismaClient.order.create({
-      data: {
-        userId: req.user.id,
-        addressId: address.id,
-        paymentId: payment?.id,
-        total_item: product.length,
-      },
-    });
-    // caculate sub total of the product with qty
-    const orderProducts: OrderProduct[] = [];
-    for (let item of product) {
-      const findProduct = await prismaClient.product.findFirst({
-        where: {
-          id: item.id,
+    //check if product have
+    if (product.length > 0) {
+      //check if product id have
+      for (let item of product) {
+        const findProduct = await prismaClient.product.findFirst({
+          where: {
+            id: item.id,
+          },
+        });
+        if (findProduct == null) {
+          throw new NotFoundException(
+            false,
+            "Product Not Found",
+            ErrorCode.NOT_FOUNT
+          );
+        }
+      }
+      const order = await prismaClient.order.create({
+        data: {
+          userId: req.user.id,
+          addressId: address.id,
+          paymentId: payment?.id,
+          total_item: product.length,
         },
       });
-      let sub_total = findProduct ? +findProduct.price * item.quantity : 1;
-      if (findProduct) {
+      // caculate sub total of the product with qty
+      const orderProducts: OrderProduct[] = [];
+      for (let item of product) {
+        const findProduct = await prismaClient.product.findFirst({
+          where: {
+            id: item.id,
+          },
+        });
+        let sub_total = findProduct ? +findProduct.price * item.quantity : 1;
         let _product: any = {
           orderId: order.id,
           productId: +item.id,
@@ -48,44 +64,48 @@ const createOrder = async (req: Request, res: Response) => {
           sub_total: sub_total,
         };
         orderProducts.push(_product);
-      } else {
-        throw new NotFoundException(
-          false,
-          "Product Not Found",
-          ErrorCode.NOT_FOUNT
-        );
       }
+      //create oder product
+      await prismaClient.orderProduct.createMany({
+        data: orderProducts,
+      });
+      //caculate total of the products order
+      let total = 0;
+      orderProducts.map((item) => {
+        return (total += parseFloat(
+          item.sub_total ? item.sub_total.toString() : "1"
+        ));
+      });
+      // update order with total
+      await prismaClient.order.update({
+        where: {
+          id: order.id,
+        },
+        data: {
+          total: total,
+        },
+      });
+      await prismaClient.orderEvent.create({
+        data: {
+          orderId: +order.id,
+        },
+      });
+      res.json({ messsage: true, data: "Product orders successfully!" });
+    } else {
+      throw new NotFoundException(
+        false,
+        "Product is Empty",
+        ErrorCode.NOT_FOUNT
+      );
     }
-    //create oder product
-    await prismaClient.orderProduct.createMany({
-      data: orderProducts,
-    });
-    //caculate total of the products order
-    let total = 0;
-    orderProducts.map((item) => {
-      return (total += parseFloat(
-        item.sub_total ? item.sub_total.toString() : "1"
-      ));
-    });
-    // update order with total
-    await prismaClient.order.update({
-      where: {
-        id: order.id,
-      },
-      data: {
-        total: total,
-      },
-    });
-    await prismaClient.orderEvent.create({
-      data: {
-        orderId: +order.id,
-      },
-    });
-    res.json({ messsage: true, data: "Product orders successfully!" });
   } else {
     throw new NotFoundException(
       false,
-      "Address Not Found",
+      address == null && payment == null
+        ? "Address & Payment Method Not Found!"
+        : address == null
+        ? "Address Not Found"
+        : "Payment Method Not Found",
       ErrorCode.NOT_FOUNT
     );
   }
