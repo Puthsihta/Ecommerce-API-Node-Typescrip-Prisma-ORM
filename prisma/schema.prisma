@@ -23,7 +23,6 @@ model User{
   updated_at DateTime @updatedAt
 
   addresss Address[]
-  carts Cart[]
   oreders Order[]
 
   
@@ -54,25 +53,10 @@ model Product{
   image_url String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-
-  carts Cart[]
   orders OrderProduct[]
 
   @@fulltext([name, description, tags])
   @@map("products")
-}
-
-model Cart{
-  id Int @id @default(autoincrement())
-  userId Int
-  user User @relation(fields: [userId], references: [id])
-  productId Int
-  product Product @relation(fields: [productId], references: [id])
-  qty Int
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  @@map("carts")
 }
 
 model Order{
