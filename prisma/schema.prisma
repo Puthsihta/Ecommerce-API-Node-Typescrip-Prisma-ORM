@@ -109,7 +109,6 @@ model OrderEvent{
 
 model PaymentMethod{
   id Int @id @default(autoincrement())
-  orderId Int
   name String
   description String
   type String
