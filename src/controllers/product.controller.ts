@@ -2,15 +2,40 @@ import { Request, Response } from "express";
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
+import { CreatProductchema } from "../schemas/product";
 
 const createProduct = async (req: Request, res: Response) => {
-  const product = await prismaClient.product.create({
-    data: {
-      ...req.body,
-      tags: req.body.tags.join(","),
+  CreatProductchema.parse(req.body);
+  //check category
+  const category = await prismaClient.category.findFirst({
+    where: {
+      id: +req.body.cateId,
     },
   });
-  res.json(product);
+  //check subcategory
+  const sub_category = await prismaClient.subCategory.findFirst({
+    where: {
+      id: +req.body.subCateId,
+    },
+  });
+  if (category && sub_category) {
+    const product = await prismaClient.product.create({
+      data: {
+        ...req.body,
+      },
+    });
+    res.json({ message: true, data: "Product create successfully" });
+  } else {
+    throw new NotFoundException(
+      false,
+      category == null && sub_category == null
+        ? "Category and Subcategory not found"
+        : category == null
+        ? "Category no found"
+        : "Subcategory not found",
+      ErrorCode.NOT_FOUNT
+    );
+  }
 };
 
 const listProduct = async (req: Request, res: Response) => {
@@ -52,18 +77,41 @@ const listProductByID = async (req: Request, res: Response) => {
 };
 
 const updateProduct = async (req: Request, res: Response) => {
+  CreatProductchema.parse(req.body);
   try {
-    const product = req.body;
-    if (product.tags) {
-      product.tags = product.tags.join(",");
-    }
-    const updateProduct = await prismaClient.product.update({
+    CreatProductchema.parse(req.body);
+    //check category
+    const category = await prismaClient.category.findFirst({
       where: {
-        id: +req.params.id,
+        id: +req.body.cateId,
       },
-      data: product,
     });
-    res.json({ message: true, data: updateProduct });
+    //check subcategory
+    const sub_category = await prismaClient.subCategory.findFirst({
+      where: {
+        id: +req.body.subCateId,
+      },
+    });
+    if (category && sub_category) {
+      const product = req.body;
+      const updateProduct = await prismaClient.product.update({
+        where: {
+          id: +req.params.id,
+        },
+        data: product,
+      });
+      res.json({ message: true, data: "Update Product Successfully!" });
+    } else {
+      throw new NotFoundException(
+        false,
+        category == null && sub_category == null
+          ? "Category and Subcategory not found"
+          : category == null
+          ? "Category no found"
+          : "Subcategory not found",
+        ErrorCode.NOT_FOUNT
+      );
+    }
   } catch (err) {
     throw new NotFoundException(
       false,

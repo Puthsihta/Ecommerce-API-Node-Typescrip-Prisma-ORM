@@ -47,15 +47,18 @@ model Address{
 model Product{
   id Int @id @default(autoincrement())
   name String
-  description String @db.Text
+  description String? @db.Text
   price Decimal
-  tags String
   image_url String?
+  cateId Int
+  category Category @relation(fields: [cateId], references: [id])
+  subCateId Int
+  subCategory SubCategory @relation(fields: [subCateId], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   orders OrderProduct[]
 
-  @@fulltext([name, description, tags])
+  @@fulltext([name, description])
   @@map("products")
 }
 
@@ -78,6 +81,7 @@ model Order{
   product_data OrderProduct[]
   events OrderEvent[]
 
+  @@fulltext([invoice_no])
   @@map("orders")
 }
 
@@ -110,7 +114,7 @@ model OrderEvent{
 model PaymentMethod{
   id Int @id @default(autoincrement())
   name String
-  description String
+  description String @db.Text
   type String
   image_url String?
   userId Int
@@ -119,4 +123,36 @@ model PaymentMethod{
   updated_at DateTime @updatedAt
 
   order Order[]
+
+  @@fulltext([name, description])
+  @@map("payment_methods")
+}
+model Category{
+  id Int @id @default(autoincrement())
+  name String
+  description String? @db.Text
+  image_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  subCategory SubCategory[]
+  product Product[]
+
+  @@fulltext([name, description])
+  @@map("categories")
+}
+model SubCategory{
+  id Int @id @default(autoincrement())
+  name String
+  description String? @db.Text
+  image_url String?
+  cateId Int
+  category Category @relation(fields: [cateId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  product Product[]
+
+  @@fulltext([name, description])
+  @@map("sub_categories")
 }
