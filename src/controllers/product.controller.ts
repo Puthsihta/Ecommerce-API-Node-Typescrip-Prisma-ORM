@@ -19,7 +19,7 @@ const createProduct = async (req: Request, res: Response) => {
     },
   });
   if (category && sub_category) {
-    const product = await prismaClient.product.create({
+    await prismaClient.product.create({
       data: {
         ...req.body,
       },
@@ -47,9 +47,16 @@ const listProduct = async (req: Request, res: Response) => {
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
 
+  const search = String(req.query.search);
+  let whereClause = {};
+  if (req.query.search) {
+    whereClause = { name: { search }, description: { search } };
+  }
+
   const products = await prismaClient.product.findMany({
     skip: startIndex,
     take: Number(limit),
+    where: whereClause,
   });
   res.json({
     message: true,
@@ -94,7 +101,7 @@ const updateProduct = async (req: Request, res: Response) => {
     });
     if (category && sub_category) {
       const product = req.body;
-      const updateProduct = await prismaClient.product.update({
+      await prismaClient.product.update({
         where: {
           id: +req.params.id,
         },

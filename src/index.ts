@@ -14,4 +14,6 @@ app.listen(PORT, () => {
   console.log("http://localhost:", PORT);
 });
 
-export const prismaClient = new PrismaClient();
+export const prismaClient = new PrismaClient({
+  // log: ["query", "info", "warn"],
+});

@@ -112,7 +112,7 @@ const updateOrderStatus = async (req: Request, res: Response) => {
 };
 const listOrders = async (req: Request, res: Response) => {
   let whereClause = {};
-  const status = req.query.status;
+  const status = Number(req.query.status);
   const userId = Number(req.query.userId);
   if (status) {
     whereClause = { status };
@@ -120,7 +120,6 @@ const listOrders = async (req: Request, res: Response) => {
   if (userId) {
     whereClause = { ...whereClause, userId };
   }
-
   // pagenation
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;

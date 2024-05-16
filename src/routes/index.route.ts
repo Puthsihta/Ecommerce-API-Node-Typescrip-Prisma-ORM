@@ -6,6 +6,7 @@ import orderRoute from "./order.route";
 import adminRoute from "./admin.route";
 import { uploadRouter } from "./upload.route";
 import paymentMethodRoutes from "./payment_method.route";
+import categoryRout from "./category.route";
 
 const rootRouter: Router = Router();
 
@@ -14,6 +15,7 @@ rootRouter.use("/products", productRoutes);
 rootRouter.use("/address", addressRoutes);
 rootRouter.use("/order", orderRoute);
 rootRouter.use("/admin", adminRoute);
+rootRouter.use("/category", categoryRout);
 rootRouter.use("/payment-method", paymentMethodRoutes);
 rootRouter.use("/upload", uploadRouter);
 
