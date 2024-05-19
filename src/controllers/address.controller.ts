@@ -25,12 +25,20 @@ const listAddress = async (req: Request, res: Response) => {
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
 
+  const search = String(req.query.search);
+  const userId = +req.user.id;
+  let whereClause = {};
+  if (req.query.search) {
+    whereClause = { name: { search }, address: { search } };
+  }
+  if (userId) {
+    whereClause = { ...whereClause, userId };
+  }
+
   const address = await prismaClient.address.findMany({
     skip: startIndex,
     take: Number(limit),
-    where: {
-      userId: +req.user.id,
-    },
+    where: whereClause,
   });
   res.json({
     message: true,

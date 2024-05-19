@@ -16,12 +16,21 @@ const listUser = async (req: Request, res: Response) => {
   });
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
+
+  const search = String(req.query.search);
+  const role = req.query.role ? String(req.query.role) : Role.user;
+  let whereClause = {};
+  if (req.query.search) {
+    whereClause = { name: { search }, email: { search } };
+  }
+  if (req.query.role) {
+    whereClause = { ...whereClause, role };
+  }
+
   const users = await prismaClient.user.findMany({
     skip: startIndex,
     take: Number(limit),
-    where: {
-      role: req.query.role ? String(req.query.role) : Role.user,
-    },
+    where: whereClause,
     select: {
       id: true,
       password: false,
@@ -114,8 +123,13 @@ const listOrders = async (req: Request, res: Response) => {
   let whereClause = {};
   const status = Number(req.query.status);
   const userId = Number(req.query.userId);
+  const search = String(req.query.search);
+
+  if (req.query.search) {
+    whereClause = { invoice_no: { search } };
+  }
   if (status) {
-    whereClause = { status };
+    whereClause = { ...whereClause, status };
   }
   if (userId) {
     whereClause = { ...whereClause, userId };

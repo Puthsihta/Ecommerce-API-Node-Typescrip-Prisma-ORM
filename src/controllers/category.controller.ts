@@ -17,7 +17,14 @@ const creatCategory = async (req: Request, res: Response) => {
   res.json({ message: true, data: "Create category successfully!" });
 };
 const listCategory = async (req: Request, res: Response) => {
-  const category = await prismaClient.category.findMany();
+  const search = String(req.query.search);
+  let whereClause = {};
+  if (req.query.search) {
+    whereClause = { name: { search }, description: { search } };
+  }
+  const category = await prismaClient.category.findMany({
+    where: whereClause,
+  });
   res.json({ message: true, data: category });
 };
 const updateCategory = async (req: Request, res: Response) => {
@@ -81,10 +88,17 @@ const creatSubCategory = async (req: Request, res: Response) => {
 };
 const listSubCategory = async (req: Request, res: Response) => {
   try {
+    const search = String(req.query.search);
+    const cateId = Number(req.query.cateId);
+    let whereClause = {};
+    if (req.query.search) {
+      whereClause = { name: { search }, description: { search } };
+    }
+    if (cateId) {
+      whereClause = { ...whereClause, cateId };
+    }
     const category = await prismaClient.subCategory.findMany({
-      where: {
-        cateId: Number(req.query.cateId),
-      },
+      where: whereClause,
     });
     res.json({ message: true, data: category });
   } catch (err) {

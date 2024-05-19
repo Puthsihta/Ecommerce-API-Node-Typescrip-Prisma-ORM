@@ -26,6 +26,7 @@ model User{
   oreders Order[]
   paymentMethods PaymentMethod[]
   
+  @@fulltext([name, email])
   @@map("users")
 }
 
@@ -40,6 +41,7 @@ model Address{
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  @@fulltext([name, address])
   @@map("addresses")
   order Order[]
 }

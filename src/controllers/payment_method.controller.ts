@@ -14,7 +14,14 @@ const creatPaymentMethod = async (req: Request, res: Response) => {
   res.json({ message: true, data: "Create Payment Method Successfully!" });
 };
 const listPaymentMethod = async (req: Request, res: Response) => {
-  const paymentMethod = await prismaClient.paymentMethod.findMany();
+  const search = String(req.query.search);
+  let whereClause = {};
+  if (req.query.search) {
+    whereClause = { name: { search }, description: { search } };
+  }
+  const paymentMethod = await prismaClient.paymentMethod.findMany({
+    where: whereClause,
+  });
   res.json({ message: true, data: paymentMethod });
 };
 const updatePaymentMethod = async (req: Request, res: Response) => {

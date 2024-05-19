@@ -119,12 +119,21 @@ const listOder = async (req: Request, res: Response) => {
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
 
+  const search = String(req.query.search);
+  const userId = +req.user.id;
+  let whereClause = {};
+
+  if (req.query.search) {
+    whereClause = { invoice_no: { search } };
+  }
+  if (userId) {
+    whereClause = { ...whereClause, userId };
+  }
+
   const order = await prismaClient.order.findMany({
     skip: startIndex,
     take: Number(limit),
-    where: {
-      userId: req.user.id,
-    },
+    where: whereClause,
   });
 
   res.json({
