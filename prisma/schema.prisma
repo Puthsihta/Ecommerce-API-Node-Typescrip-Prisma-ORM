@@ -25,6 +25,7 @@ model User{
   addresss Address[]
   oreders Order[]
   paymentMethods PaymentMethod[]
+  shopo Shop[]
   
   @@fulltext([name, email])
   @@map("users")
@@ -44,18 +45,21 @@ model Address{
   @@fulltext([name, address])
   @@map("addresses")
   order Order[]
+  shop Shop[]
 }
 
 model Product{
   id Int @id @default(autoincrement())
-  name String
-  description String? @db.Text
-  price Decimal
-  image_url String?
   cateId Int
   category Category @relation(fields: [cateId], references: [id])
   subCateId Int
   subCategory SubCategory @relation(fields: [subCateId], references: [id])
+  shopId Int
+  shop Shop @relation(fields: [shopId], references: [id])
+  name String
+  description String? @db.Text
+  price Decimal
+  image_url String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   orders OrderProduct[]
@@ -157,4 +161,41 @@ model SubCategory{
 
   @@fulltext([name, description])
   @@map("sub_categories")
+}
+
+model Shop{
+  id Int @id @default(autoincrement())
+  name String
+  description String? @db.Text
+  phone String?
+  email String?
+  addressId Int
+  userId Int
+  isActive Boolean @default(true)
+  address Address @relation(fields: [addressId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  image_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  product Product[]
+
+  @@fulltext([name])
+  @@map("shops")
+}
+model Setting{
+  id Int @id @default(autoincrement())
+  title String
+  type String @default("contact_us")
+  content String? @db.LongText()
+  phone String?
+  email String?
+  web String?
+  address String?
+  latitude String?
+  longitude String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("settings")
 }
