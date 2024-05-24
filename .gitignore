@@ -4,3 +4,4 @@ node_modules
 migrations
 package-lock.json
 uploads
+.DS_Store

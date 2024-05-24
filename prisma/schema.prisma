@@ -60,6 +60,7 @@ model Product{
   description String? @db.Text
   price Decimal
   image_url String?
+  is_favorite Boolean? @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   orders OrderProduct[]
@@ -175,6 +176,7 @@ model Shop{
   address Address @relation(fields: [addressId], references: [id])
   user User @relation(fields: [userId], references: [id])
   image_url String?
+  is_favorite Boolean? @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

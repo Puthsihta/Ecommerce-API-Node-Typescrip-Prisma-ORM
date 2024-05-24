@@ -145,10 +145,39 @@ const deleteProduct = async (req: Request, res: Response) => {
   }
 };
 
+const favoriteProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await prismaClient.product.findFirstOrThrow({
+      where: { id: +req.params.id },
+    });
+    await prismaClient.product.update({
+      where: {
+        id: +req.params.id,
+      },
+      data: {
+        is_favorite: !product.is_favorite,
+      },
+    });
+    res.json({
+      message: true,
+      data: product.is_favorite
+        ? "UnFavorite Successfully"
+        : "Favorite Successfully",
+    });
+  } catch (err) {
+    throw new NotFoundException(
+      false,
+      "Product not found",
+      ErrorCode.NOT_FOUNT
+    );
+  }
+};
+
 export {
   createProduct,
   listProduct,
   listProductByID,
   updateProduct,
   deleteProduct,
+  favoriteProduct,
 };

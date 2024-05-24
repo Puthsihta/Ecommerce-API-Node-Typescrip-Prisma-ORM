@@ -6,6 +6,7 @@ import {
   closeShop,
   creatShop,
   deleteShop,
+  favoriteShop,
   listShop,
   listShopByID,
   updateShop,
@@ -35,5 +36,6 @@ shopRoutes.delete(
   [authMiddleware, adminMiddleware],
   errorHandler(deleteShop)
 );
+shopRoutes.post("/favorite/:id", [authMiddleware], errorHandler(favoriteShop));
 
 export default shopRoutes;

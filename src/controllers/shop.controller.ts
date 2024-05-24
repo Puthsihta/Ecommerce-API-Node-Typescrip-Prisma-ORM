@@ -96,5 +96,36 @@ const closeShop = async (req: Request, res: Response) => {
     throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
   }
 };
+const favoriteShop = async (req: Request, res: Response) => {
+  try {
+    const shop = await prismaClient.shop.findFirstOrThrow({
+      where: { id: +req.params.id },
+    });
+    await prismaClient.shop.update({
+      where: {
+        id: +req.params.id,
+      },
+      data: {
+        is_favorite: !shop.is_favorite,
+      },
+    });
+    res.json({
+      message: true,
+      data: shop.is_favorite
+        ? "UnFavorite Successfully"
+        : "Favorite Successfully",
+    });
+  } catch (err) {
+    throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
+  }
+};
 
-export { creatShop, listShop, listShopByID, updateShop, deleteShop, closeShop };
+export {
+  creatShop,
+  listShop,
+  listShopByID,
+  updateShop,
+  deleteShop,
+  closeShop,
+  favoriteShop,
+};

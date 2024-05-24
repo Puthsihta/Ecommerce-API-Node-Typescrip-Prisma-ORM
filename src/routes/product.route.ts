@@ -3,6 +3,7 @@ import { errorHandler } from "../error_handler";
 import {
   createProduct,
   deleteProduct,
+  favoriteProduct,
   listProduct,
   listProductByID,
   updateProduct,
@@ -28,6 +29,11 @@ productRoutes.delete(
   "/:id",
   [authMiddleware, adminMiddleware],
   errorHandler(deleteProduct)
+);
+productRoutes.post(
+  "/favorite/:id",
+  [authMiddleware],
+  errorHandler(favoriteProduct)
 );
 
 export default productRoutes;
