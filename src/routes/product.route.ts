@@ -4,6 +4,7 @@ import {
   createProduct,
   deleteProduct,
   favoriteProduct,
+  listFavoritesProduct,
   listProduct,
   listProductByID,
   updateProduct,
@@ -19,6 +20,11 @@ productRoutes.post(
   errorHandler(createProduct)
 );
 productRoutes.get("/", errorHandler(listProduct));
+productRoutes.get(
+  "/favorites",
+  [authMiddleware],
+  errorHandler(listFavoritesProduct)
+);
 productRoutes.get("/:id", errorHandler(listProductByID));
 productRoutes.put(
   "/:id",

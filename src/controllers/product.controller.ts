@@ -173,6 +173,36 @@ const favoriteProduct = async (req: Request, res: Response) => {
   }
 };
 
+const listFavoritesProduct = async (req: Request, res: Response) => {
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.product.count({
+    where: {
+      is_favorite: true,
+    },
+  });
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
+
+  const products = await prismaClient.product.findMany({
+    skip: startIndex,
+    take: Number(limit),
+    where: {
+      is_favorite: true,
+    },
+  });
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: products,
+  });
+};
+
 export {
   createProduct,
   listProduct,
@@ -180,4 +210,5 @@ export {
   updateProduct,
   deleteProduct,
   favoriteProduct,
+  listFavoritesProduct,
 };

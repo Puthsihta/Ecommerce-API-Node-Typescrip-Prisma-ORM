@@ -45,7 +45,7 @@ const listShop = async (req: Request, res: Response) => {
 };
 const listShopByID = async (req: Request, res: Response) => {
   try {
-    const shop = await prismaClient.shop.findFirst({
+    const shop = await prismaClient.shop.findFirstOrThrow({
       where: { id: +req.params.id },
     });
     res.json({ message: true, data: shop });
@@ -120,6 +120,36 @@ const favoriteShop = async (req: Request, res: Response) => {
   }
 };
 
+const listFavoritesShop = async (req: Request, res: Response) => {
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.shop.count({
+    where: {
+      is_favorite: true,
+    },
+  });
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
+
+  const shops = await prismaClient.shop.findMany({
+    skip: startIndex,
+    take: Number(limit),
+    where: {
+      is_favorite: true,
+    },
+  });
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: shops,
+  });
+};
+
 export {
   creatShop,
   listShop,
@@ -128,4 +158,5 @@ export {
   deleteShop,
   closeShop,
   favoriteShop,
+  listFavoritesShop,
 };
