@@ -9,6 +9,7 @@ import paymentMethodRoutes from "./payment_method.route";
 import categoryRout from "./category.route";
 import shopRoutes from "./shop.route";
 import settingRoute from "./setting.route";
+import homeRoute from "./home.route";
 
 const rootRouter: Router = Router();
 
@@ -21,6 +22,7 @@ rootRouter.use("/category", categoryRout);
 rootRouter.use("/payment-method", paymentMethodRoutes);
 rootRouter.use("/shops", shopRoutes);
 rootRouter.use("/setting", settingRoute);
+rootRouter.use("/home", homeRoute);
 rootRouter.use("/upload", uploadRouter);
 
 export default rootRouter;
