@@ -11,7 +11,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User{
   id Int @id @default(autoincrement())
   name String
@@ -175,8 +174,15 @@ model Shop{
   isActive Boolean @default(true)
   address Address @relation(fields: [addressId], references: [id])
   user User @relation(fields: [userId], references: [id])
-  image_url String?
+  cover_image String?
+  logo_image String?
   is_favorite Boolean? @default(false)
+  is_new Boolean? @default(true)
+  open_time Json?
+  open_week Json?
+  freight Json?
+  merchant_type String?
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreatShopSchema } from "../schemas/shop";
+import { CreatShopSchema, ShopProductSchema } from "../schemas/shop";
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
@@ -150,6 +150,44 @@ const listFavoritesShop = async (req: Request, res: Response) => {
   });
 };
 
+const listProductbyShop = async (req: Request, res: Response) => {
+  ShopProductSchema.parse(req.query);
+  // pagenation
+  const shop_id = req.query.shop_id;
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.shop.count({
+    where: {
+      is_favorite: true,
+    },
+  });
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
+  const product_by_shop = await prismaClient.product.findMany({
+    skip: startIndex,
+    take: Number(limit),
+    where: {
+      shopId: Number(shop_id),
+    },
+    include: {
+      category: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: product_by_shop,
+  });
+};
+
 export {
   creatShop,
   listShop,
@@ -159,4 +197,5 @@ export {
   closeShop,
   favoriteShop,
   listFavoritesShop,
+  listProductbyShop,
 };

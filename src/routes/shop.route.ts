@@ -8,6 +8,7 @@ import {
   deleteShop,
   favoriteShop,
   listFavoritesShop,
+  listProductbyShop,
   listShop,
   listShopByID,
   updateShop,
@@ -22,6 +23,7 @@ shopRoutes.post(
 );
 shopRoutes.get("/", errorHandler(listShop));
 shopRoutes.get("/favorites", [authMiddleware], errorHandler(listFavoritesShop));
+shopRoutes.get("/product_list", errorHandler(listProductbyShop));
 shopRoutes.get("/:id", errorHandler(listShopByID));
 shopRoutes.put(
   "/:id",
