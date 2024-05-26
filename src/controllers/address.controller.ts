@@ -13,7 +13,7 @@ const createAddress = async (req: Request, res: Response) => {
     },
   });
 
-  res.json({ message: true, data: address });
+  res.json({ message: true, data: "Address Create Successfully!" });
 };
 
 const listAddress = async (req: Request, res: Response) => {

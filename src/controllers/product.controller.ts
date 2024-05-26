@@ -13,26 +13,38 @@ const createProduct = async (req: Request, res: Response) => {
     },
   });
   //check subcategory
-  const sub_category = await prismaClient.subCategory.findFirst({
-    where: {
-      id: +req.body.subCateId,
-    },
-  });
-  if (category && sub_category) {
-    await prismaClient.product.create({
-      data: {
-        ...req.body,
+  let sub_category;
+  if (req.body.subCateId) {
+    sub_category = await prismaClient.subCategory.findFirst({
+      where: {
+        id: +req.body.subCateId,
       },
     });
-    res.json({ message: true, data: "Product create successfully" });
+  }
+  if (category) {
+    if (req.body.subCateId) {
+      if (sub_category == null) {
+        throw new NotFoundException(
+          false,
+          "Sub Category no found",
+          ErrorCode.NOT_FOUNT
+        );
+      }
+    }
+    try {
+      await prismaClient.product.create({
+        data: {
+          ...req.body,
+        },
+      });
+      res.json({ message: true, data: "Product create successfully" });
+    } catch (error) {
+      console.log("error create product : ", error);
+    }
   } else {
     throw new NotFoundException(
       false,
-      category == null && sub_category == null
-        ? "Category and Subcategory not found"
-        : category == null
-        ? "Category no found"
-        : "Subcategory not found",
+      "Category no found",
       ErrorCode.NOT_FOUNT
     );
   }

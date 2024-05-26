@@ -46,13 +46,41 @@ model Address{
   order Order[]
   shop Shop[]
 }
+model Category{
+  id Int @id @default(autoincrement())
+  name String
+  description String? @db.Text
+  image_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
+  subCategory SubCategory[]
+  product Product[]
+
+  @@fulltext([name, description])
+  @@map("categories")
+}
+model SubCategory{
+  id Int @id @default(autoincrement())
+  name String
+  description String? @db.Text
+  image_url String?
+  cateId Int?
+  category Category? @relation(fields: [cateId], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  product Product[]
+
+  @@fulltext([name, description])
+  @@map("sub_categories")
+}
 model Product{
   id Int @id @default(autoincrement())
   cateId Int
   category Category @relation(fields: [cateId], references: [id])
-  subCateId Int
-  subCategory SubCategory @relation(fields: [subCateId], references: [id])
+  subCateId Int?
+  subCategory SubCategory? @relation(fields: [subCateId], references: [id])
   shopId Int
   shop Shop @relation(fields: [shopId], references: [id])
   name String
@@ -60,6 +88,7 @@ model Product{
   price Decimal
   image_url String?
   is_favorite Boolean? @default(false)
+  discount Decimal?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   orders OrderProduct[]
@@ -67,7 +96,37 @@ model Product{
   @@fulltext([name, description])
   @@map("products")
 }
+model Shop{
+  id Int @id @default(autoincrement())
+  name String
+  description String? @db.Text
+  phone String?
+  email String?
+  addressId Int
+  userId Int
+  isActive Boolean @default(true)
+  address Address @relation(fields: [addressId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+  cover_image String?
+  logo_image String?
+  is_favorite Boolean? @default(false)
+  is_new Boolean? @default(true)
+  is_promotion Boolean? @default(false)
+  promotion Json?
+  
+  open_time Json?
+  open_week Json?
+  freight Json?
+  merchant_type String?
 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  product Product[]
+
+  @@fulltext([name])
+  @@map("shops")
+}
 model Order{
   id Int @id @default(autoincrement())
   userId Int
@@ -132,64 +191,6 @@ model PaymentMethod{
 
   @@fulltext([name, description])
   @@map("payment_methods")
-}
-model Category{
-  id Int @id @default(autoincrement())
-  name String
-  description String? @db.Text
-  image_url String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  subCategory SubCategory[]
-  product Product[]
-
-  @@fulltext([name, description])
-  @@map("categories")
-}
-model SubCategory{
-  id Int @id @default(autoincrement())
-  name String
-  description String? @db.Text
-  image_url String?
-  cateId Int
-  category Category @relation(fields: [cateId], references: [id])
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  product Product[]
-
-  @@fulltext([name, description])
-  @@map("sub_categories")
-}
-
-model Shop{
-  id Int @id @default(autoincrement())
-  name String
-  description String? @db.Text
-  phone String?
-  email String?
-  addressId Int
-  userId Int
-  isActive Boolean @default(true)
-  address Address @relation(fields: [addressId], references: [id])
-  user User @relation(fields: [userId], references: [id])
-  cover_image String?
-  logo_image String?
-  is_favorite Boolean? @default(false)
-  is_new Boolean? @default(true)
-  open_time Json?
-  open_week Json?
-  freight Json?
-  merchant_type String?
-
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  product Product[]
-
-  @@fulltext([name])
-  @@map("shops")
 }
 model Setting{
   id Int @id @default(autoincrement())

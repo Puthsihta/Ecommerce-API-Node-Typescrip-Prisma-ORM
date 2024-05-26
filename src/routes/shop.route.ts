@@ -3,6 +3,7 @@ import { errorHandler } from "../error_handler";
 import authMiddleware from "../middlewares/auth";
 import adminMiddleware from "../middlewares/admin";
 import {
+  addShopPromotion,
   closeShop,
   creatShop,
   deleteShop,
@@ -41,5 +42,10 @@ shopRoutes.delete(
   errorHandler(deleteShop)
 );
 shopRoutes.post("/favorite/:id", [authMiddleware], errorHandler(favoriteShop));
+shopRoutes.post(
+  "/add-promotion/:id",
+  [authMiddleware, adminMiddleware],
+  errorHandler(addShopPromotion)
+);
 
 export default shopRoutes;
