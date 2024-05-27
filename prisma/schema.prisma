@@ -25,6 +25,7 @@ model User{
   oreders Order[]
   paymentMethods PaymentMethod[]
   shopo Shop[]
+  orderReview OrderReview[]
   
   @@fulltext([name, email])
   @@map("users")
@@ -124,6 +125,7 @@ model Shop{
   updated_at DateTime @updatedAt
 
   product Product[]
+  orderReview OrderReview[]
 
   @@fulltext([name])
   @@map("shops")
@@ -148,6 +150,7 @@ model Order{
 
   product_data OrderProduct[]
   events OrderEvent[]
+  orderReview OrderReview[]
 
   @@fulltext([invoice_no])
   @@map("orders")
@@ -179,7 +182,20 @@ model OrderEvent{
 
   @@map("order_events")
 }
-
+model OrderReview{
+  id Int @id @default(autoincrement())
+  orderId Int
+  order Order @relation(fields: [orderId], references: [id])
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  shopId Int
+  shop Shop @relation(fields: [shopId], references: [id])
+  order_rating Int
+  shop_rating Int
+  driver_rating Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
 model PaymentMethod{
   id Int @id @default(autoincrement())
   name String

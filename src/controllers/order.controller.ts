@@ -5,6 +5,7 @@ import { ErrorCode } from "../errors/root.excpetion";
 import { OrderStatus } from "../constants/index.constants";
 import { CreatOrderSchema } from "../schemas/order";
 import { OrderProduct } from "@prisma/client";
+import { CreatOrderReviewSchema } from "../schemas/order_review";
 
 const createOrder = async (req: Request, res: Response) => {
   CreatOrderSchema.parse(req.body);
@@ -212,5 +213,23 @@ const listOrderById = async (req: Request, res: Response) => {
     throw new NotFoundException(false, "Order not found", ErrorCode.NOT_FOUNT);
   }
 };
+const orderReview = async (req: Request, res: Response) => {
+  CreatOrderReviewSchema.parse(req.body);
+  try {
+    await prismaClient.orderReview.create({
+      data: {
+        userId: +req.user.id,
+        orderId: +req.params.order_id,
+        shopId: +req.body.shop_id,
+        order_rating: +req.body.order_rating,
+        shop_rating: +req.body.shop_rating,
+        driver_rating: +req.body.driver_rating ?? null,
+      },
+    });
+    res.json({ message: true, data: "Review Order Successfully" });
+  } catch (err) {
+    throw new NotFoundException(false, "Order not found", ErrorCode.NOT_FOUNT);
+  }
+};
 
-export { createOrder, listOder, cancelStatus, listOrderById };
+export { createOrder, listOder, cancelStatus, listOrderById, orderReview };
