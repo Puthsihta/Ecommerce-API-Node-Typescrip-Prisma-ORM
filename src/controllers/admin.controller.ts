@@ -105,13 +105,13 @@ const updateOrderStatus = async (req: Request, res: Response) => {
         id: +req.params.id,
       },
       data: {
-        status: req.body.status,
+        status: +req.body.status,
       },
     });
     await prismaClient.orderEvent.create({
       data: {
         orderId: order.id,
-        status: req.body.status,
+        status: +req.body.status,
       },
     });
     res.json({ message: true, data: order });

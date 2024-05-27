@@ -167,7 +167,7 @@ const listOder = async (req: Request, res: Response) => {
 };
 const cancelStatus = async (req: Request, res: Response) => {
   try {
-    const order = await prismaClient.order.update({
+    await prismaClient.order.update({
       where: {
         id: +req.params.id,
       },
@@ -181,7 +181,7 @@ const cancelStatus = async (req: Request, res: Response) => {
         status: OrderStatus.CANCEL,
       },
     });
-    res.json({ message: true, data: order });
+    res.json({ message: true, data: "Cancel Order Successfully" });
   } catch (err) {
     throw new NotFoundException(
       false,
