@@ -89,6 +89,7 @@ model Product{
   image_url String?
   is_favorite Boolean? @default(false)
   discount Int?
+  follow_shop_discount Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   orders OrderProduct[]

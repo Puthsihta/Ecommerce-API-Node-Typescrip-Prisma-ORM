@@ -12,7 +12,10 @@ import {
   checkIsNew,
   checkValidationDate,
 } from "../utils/index.util";
-import { updateIsPromotion } from "../utils/updateIsPromtion";
+import {
+  updateIsPromotion,
+  updateProductDiscount,
+} from "../utils/updateIsPromtion";
 import { Prisma } from "@prisma/client";
 import { updateIsNew } from "../utils/updateIsNew";
 
@@ -282,6 +285,7 @@ const addShopPromotion = async (req: Request, res: Response) => {
             },
       },
     });
+    updateProductDiscount();
     res.json({
       message: true,
       data: shop.is_promotion
