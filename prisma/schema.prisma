@@ -88,7 +88,7 @@ model Product{
   price Decimal
   image_url String?
   is_favorite Boolean? @default(false)
-  discount Decimal?
+  discount Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   orders OrderProduct[]
@@ -132,6 +132,8 @@ model Order{
   userId Int
   user User @relation(fields: [userId], references: [id])
   total Decimal?
+  sub_total Decimal?
+  total_discount Decimal?
   total_item Int?
   invoice_no String @default("0001")
   remarks String? 
@@ -158,6 +160,7 @@ model OrderProduct{
   product Product @relation(fields: [productId], references: [id])
   quantity Int @default(1)
   sub_total Decimal?
+  sub_total_discount Decimal?
   noted String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

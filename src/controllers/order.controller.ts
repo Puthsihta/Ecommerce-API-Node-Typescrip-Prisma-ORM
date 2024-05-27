@@ -46,6 +46,7 @@ const createOrder = async (req: Request, res: Response) => {
           addressId: address.id,
           paymentId: payment?.id,
           total_item: product.length,
+          remarks: req.body.remarks ?? null,
         },
       });
       // caculate sub total of the product with qty
@@ -57,11 +58,20 @@ const createOrder = async (req: Request, res: Response) => {
           },
         });
         let sub_total = findProduct ? +findProduct.price * item.quantity : 1;
+        let sub_total_discount;
+        if (findProduct?.discount) {
+          sub_total_discount = findProduct
+            ? ((+findProduct.price * findProduct.discount) / 100) *
+              item.quantity
+            : 1;
+        }
         let _product: any = {
           orderId: order.id,
           productId: +item.id,
           quantity: +item.quantity,
-          sub_total: sub_total,
+          sub_total: sub_total.toFixed(2),
+          sub_total_discount: sub_total_discount?.toFixed(2),
+          noted: item.noted ?? null,
         };
         orderProducts.push(_product);
       }
@@ -71,10 +81,12 @@ const createOrder = async (req: Request, res: Response) => {
       });
       //caculate total of the products order
       let total = 0;
+      let total_discount = 0;
       orderProducts.map((item) => {
-        return (total += parseFloat(
-          item.sub_total ? item.sub_total.toString() : "1"
-        ));
+        total += parseFloat(item.sub_total ? item.sub_total.toString() : "1");
+        total_discount += parseFloat(
+          item.sub_total_discount ? item.sub_total_discount.toString() : "1"
+        );
       });
       // update order with total
       await prismaClient.order.update({
@@ -82,7 +94,9 @@ const createOrder = async (req: Request, res: Response) => {
           id: order.id,
         },
         data: {
-          total: total,
+          total: (total - total_discount).toFixed(2),
+          sub_total: total.toFixed(2),
+          total_discount: total_discount.toFixed(2),
         },
       });
       await prismaClient.orderEvent.create({
@@ -128,6 +142,12 @@ const listOder = async (req: Request, res: Response) => {
   }
   if (userId) {
     whereClause = { ...whereClause, userId };
+  }
+  if (req.query.status) {
+    whereClause = {
+      ...whereClause,
+      status: +req.query.status,
+    };
   }
 
   const order = await prismaClient.order.findMany({
@@ -177,12 +197,14 @@ const listOrderById = async (req: Request, res: Response) => {
         id: +req.params.id,
       },
       include: {
+        user: true,
+        address: true,
+        payment_method: true,
         product_data: {
           include: {
             product: true,
           },
         },
-        address: true,
       },
     });
     res.json({ message: true, data: order });

@@ -235,7 +235,7 @@ const listProductbyShop = async (req: Request, res: Response) => {
       shopId: Number(shop_id),
     },
     select: {
-      category: {
+      subCategory: {
         include: {
           product: true,
         },
