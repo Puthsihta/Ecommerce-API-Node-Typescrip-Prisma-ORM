@@ -7,16 +7,11 @@ import {
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
-import {
-  checkExpireDate,
-  checkIsNew,
-  checkValidationDate,
-} from "../utils/index.util";
+import { checkValidationDate } from "../utils/index.util";
 import {
   updateIsPromotion,
   updateProductDiscount,
 } from "../utils/updateIsPromtion";
-import { Prisma } from "@prisma/client";
 import { updateIsNew } from "../utils/updateIsNew";
 
 const creatShop = async (req: Request, res: Response) => {
@@ -58,8 +53,8 @@ const listShop = async (req: Request, res: Response) => {
     whereClause = { name: { search } };
   }
   const shops = await prismaClient.shop.findMany();
-  updateIsPromotion(shops);
-  updateIsNew(shops);
+  updateIsPromotion(shops); // check if promotion expired
+  updateIsNew(shops); // check if show is not new
   const result = await prismaClient.shop.findMany({
     skip: startIndex,
     take: Number(limit),
@@ -79,36 +74,7 @@ const listShopByID = async (req: Request, res: Response) => {
     const shop: any = await prismaClient.shop.findFirstOrThrow({
       where: { id: +req.params.id },
     });
-    let isNew = checkIsNew(shop.created_at.toString());
-    let isExpired = false;
-    if (shop.promotion) {
-      isExpired = checkExpireDate(shop.promotion.end_date);
-    }
-    if (!isNew) {
-      await prismaClient.shop.update({
-        where: {
-          id: +req.params.id,
-        },
-        data: {
-          is_new: false,
-        },
-      });
-    }
-    if (isExpired) {
-      await prismaClient.shop.update({
-        where: {
-          id: +req.params.id,
-        },
-        data: {
-          is_promotion: false,
-          promotion: undefined,
-        },
-      });
-    }
-    const result = await prismaClient.shop.findFirstOrThrow({
-      where: { id: +req.params.id },
-    });
-    res.json({ message: true, data: result });
+    res.json({ message: true, data: shop });
   } catch (err) {
     throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
   }
@@ -198,8 +164,8 @@ const listFavoritesShop = async (req: Request, res: Response) => {
       is_favorite: true,
     },
   });
-  updateIsPromotion(shops, true);
-  updateIsNew(shops, true);
+  updateIsPromotion(shops);
+  updateIsNew(shops);
   const result = await prismaClient.shop.findMany({
     skip: startIndex,
     take: Number(limit),
