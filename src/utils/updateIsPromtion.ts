@@ -1,9 +1,9 @@
-import { Shop } from "@prisma/client";
 import { checkExpireDate } from "./index.util";
 import { prismaClient } from "..";
 
-export const updateIsPromotion = (shop: Shop[]) => {
-  shop.map(async (item: any) => {
+export const updateIsPromotion = async () => {
+  const shops = await prismaClient.shop.findMany();
+  shops.map(async (item: any) => {
     let isExpired = false;
     if (item.promotion) {
       isExpired = checkExpireDate(item.promotion.end_date.toString());

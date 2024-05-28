@@ -12,10 +12,14 @@ export const checkExpireDate = (end_date: string) => {
 };
 
 export const checkValidationDate = (start_date: string, end_date: string) => {
+  let now = moment();
   if (moment(start_date) == moment(end_date)) {
     return false;
   }
   if (moment(start_date) > moment(end_date)) {
+    return false;
+  }
+  if (moment(start_date) < now || moment(end_date) < now) {
     return false;
   }
   return true;

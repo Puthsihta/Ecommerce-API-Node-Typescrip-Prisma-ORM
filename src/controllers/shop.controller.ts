@@ -52,9 +52,8 @@ const listShop = async (req: Request, res: Response) => {
   if (req.query.search) {
     whereClause = { name: { search } };
   }
-  const shops = await prismaClient.shop.findMany();
-  updateIsPromotion(shops); // check if promotion expired
-  updateIsNew(shops); // check if show is not new
+  updateIsPromotion(); // check if promotion expired
+  updateIsNew(); // check if show is not new
   const result = await prismaClient.shop.findMany({
     skip: startIndex,
     take: Number(limit),
@@ -159,13 +158,6 @@ const listFavoritesShop = async (req: Request, res: Response) => {
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
 
-  const shops = await prismaClient.shop.findMany({
-    where: {
-      is_favorite: true,
-    },
-  });
-  updateIsPromotion(shops);
-  updateIsNew(shops);
   const result = await prismaClient.shop.findMany({
     skip: startIndex,
     take: Number(limit),
@@ -245,7 +237,7 @@ const addShopPromotion = async (req: Request, res: Response) => {
       data: {
         is_promotion: !shop.is_promotion,
         promotion: shop.is_promotion
-          ? undefined
+          ? null
           : {
               ...req.body,
             },
