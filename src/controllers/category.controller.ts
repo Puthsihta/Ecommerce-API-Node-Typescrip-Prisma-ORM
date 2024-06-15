@@ -68,7 +68,7 @@ const creatSubCategory = async (req: Request, res: Response) => {
   CreatSubCategorySchema.parse(req.body);
   const category = await prismaClient.category.findFirst({
     where: {
-      id: +req.body.cateId,
+      id: +req.body.cate_id,
     },
   });
   if (category) {
@@ -89,20 +89,20 @@ const creatSubCategory = async (req: Request, res: Response) => {
 const listSubCategory = async (req: Request, res: Response) => {
   try {
     const search = String(req.query.search);
-    const cateId = Number(req.query.cateId);
+    const cate_id = Number(req.query.cate_id);
     let whereClause = {};
     if (req.query.search) {
       whereClause = { name: { search }, description: { search } };
     }
-    if (cateId) {
-      whereClause = { ...whereClause, cateId };
+    if (cate_id) {
+      whereClause = { ...whereClause, cate_id };
     }
     const category = await prismaClient.subCategory.findMany({
       where: whereClause,
     });
     res.json({ message: true, data: category });
   } catch (err) {
-    throw new NotFoundException(false, "Require cateId", ErrorCode.NOT_FOUNT);
+    throw new NotFoundException(false, "Require cate_id", ErrorCode.NOT_FOUNT);
   }
 };
 const updateSubCategory = async (req: Request, res: Response) => {
@@ -110,7 +110,7 @@ const updateSubCategory = async (req: Request, res: Response) => {
   try {
     const category = await prismaClient.category.findFirst({
       where: {
-        id: +req.body.cateId,
+        id: +req.body.cate_id,
       },
     });
     if (category) {

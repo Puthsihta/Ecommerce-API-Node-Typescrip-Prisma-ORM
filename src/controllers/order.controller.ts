@@ -9,17 +9,17 @@ import { CreatOrderReviewSchema } from "../schemas/order_review";
 
 const createOrder = async (req: Request, res: Response) => {
   CreatOrderSchema.parse(req.body);
-  const { product, addressId, paymentId } = req.body;
+  const { product, address_id, payment_id } = req.body;
   // fetch addresss
   const address = await prismaClient.address.findFirst({
     where: {
-      id: addressId,
+      id: address_id,
     },
   });
   //fetch payment methods
   const payment = await prismaClient.paymentMethod.findFirst({
     where: {
-      id: paymentId,
+      id: payment_id,
     },
   });
   // check if address & payment have
@@ -43,9 +43,9 @@ const createOrder = async (req: Request, res: Response) => {
       }
       const order = await prismaClient.order.create({
         data: {
-          userId: req.user.id,
-          addressId: address.id,
-          paymentId: payment?.id,
+          user_id: req.user.id,
+          address_id: address.id,
+          payment_id: payment?.id,
           total_item: product.length,
           remarks: req.body.remarks ?? null,
         },
@@ -67,8 +67,8 @@ const createOrder = async (req: Request, res: Response) => {
             : 1;
         }
         let _product: any = {
-          orderId: order.id,
-          productId: +item.id,
+          order_id: order.id,
+          product_id: +item.id,
           quantity: +item.quantity,
           sub_total: sub_total.toFixed(2),
           sub_total_discount: sub_total_discount?.toFixed(2),
@@ -102,7 +102,7 @@ const createOrder = async (req: Request, res: Response) => {
       });
       await prismaClient.orderEvent.create({
         data: {
-          orderId: +order.id,
+          order_id: +order.id,
         },
       });
       res.json({ messsage: true, data: "Product orders successfully!" });
@@ -135,14 +135,14 @@ const listOder = async (req: Request, res: Response) => {
   const currentPage = +page || 1;
 
   const search = String(req.query.search);
-  const userId = +req.user.id;
+  const user_id = +req.user.id;
   let whereClause = {};
 
   if (req.query.search) {
     whereClause = { invoice_no: { search } };
   }
-  if (userId) {
-    whereClause = { ...whereClause, userId };
+  if (user_id) {
+    whereClause = { ...whereClause, user_id };
   }
   if (req.query.status) {
     whereClause = {
@@ -178,7 +178,7 @@ const cancelStatus = async (req: Request, res: Response) => {
     });
     await prismaClient.orderEvent.create({
       data: {
-        orderId: +req.params.id,
+        order_id: +req.params.id,
         status: OrderStatus.CANCEL,
       },
     });
@@ -218,9 +218,9 @@ const orderReview = async (req: Request, res: Response) => {
   try {
     await prismaClient.orderReview.create({
       data: {
-        userId: +req.user.id,
-        orderId: +req.params.order_id,
-        shopId: +req.body.shop_id,
+        user_id: +req.user.id,
+        order_id: +req.params.order_id,
+        shop_id: +req.body.shop_id,
         order_rating: +req.body.order_rating,
         shop_rating: +req.body.shop_rating,
         driver_rating: +req.body.driver_rating ?? null,

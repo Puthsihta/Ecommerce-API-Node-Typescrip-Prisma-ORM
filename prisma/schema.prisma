@@ -23,9 +23,9 @@ model User{
 
   addresss Address[]
   oreders Order[]
-  paymentMethods PaymentMethod[]
+  payment_method PaymentMethod[]
   shopo Shop[]
-  orderReview OrderReview[]
+  order_review OrderReview[]
   
   @@fulltext([name, email])
   @@map("users")
@@ -37,8 +37,8 @@ model Address{
   address String
   latitude String
   longitude String
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -55,7 +55,7 @@ model Category{
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  subCategory SubCategory[]
+  sub_category SubCategory[]
   product Product[]
 
   @@fulltext([name, description])
@@ -66,8 +66,8 @@ model SubCategory{
   name String
   description String? @db.Text
   image_url String?
-  cateId Int?
-  category Category? @relation(fields: [cateId], references: [id])
+  cate_id Int?
+  category Category? @relation(fields: [cate_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -78,12 +78,12 @@ model SubCategory{
 }
 model Product{
   id Int @id @default(autoincrement())
-  cateId Int
-  category Category @relation(fields: [cateId], references: [id])
-  subCateId Int?
-  subCategory SubCategory? @relation(fields: [subCateId], references: [id])
-  shopId Int
-  shop Shop @relation(fields: [shopId], references: [id])
+  cate_id Int
+  category Category @relation(fields: [cate_id], references: [id])
+  sub_cate_id Int?
+  sub_category SubCategory? @relation(fields: [sub_cate_id], references: [id])
+  shop_id Int
+  shop Shop @relation(fields: [shop_id], references: [id])
   name String
   description String? @db.Text
   price Decimal
@@ -104,17 +104,16 @@ model Shop{
   description String? @db.Text
   phone String?
   email String?
-  addressId Int
-  userId Int
-  isActive Boolean @default(true)
-  address Address @relation(fields: [addressId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  address_id Int
+  user_id Int
+  is_active Boolean @default(true)
+  address Address @relation(fields: [address_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
   cover_image String?
   logo_image String?
   is_favorite Boolean? @default(false)
   is_new Boolean? @default(true)
   is_promotion Boolean? @default(false)
-  promotion Json?
   
   open_time Json?
   open_week Json?
@@ -125,32 +124,46 @@ model Shop{
   updated_at DateTime @updatedAt
 
   product Product[]
-  orderReview OrderReview[]
+  order_review OrderReview[]
+  promotion PromotionShop[]
 
   @@fulltext([name])
   @@map("shops")
 }
+model PromotionShop{
+  id Int @id @default(autoincrement())
+  lable String?
+  promotion Int?
+  start_date DateTime?
+  end_date DateTime?
+  shop_id Int
+  shop Shop @relation(fields: [shop_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("promotion_shops")
+}
 model Order{
   id Int @id @default(autoincrement())
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
   total Decimal?
   sub_total Decimal?
   total_discount Decimal?
   total_item Int?
   invoice_no String @default("0001")
   remarks String? 
-  addressId Int
-  address Address @relation(fields: [addressId], references: [id])
-  paymentId Int
-  payment_method PaymentMethod @relation(fields: [paymentId], references: [id])
+  address_id Int
+  address Address @relation(fields: [address_id], references: [id])
+  payment_id Int
+  payment_method PaymentMethod @relation(fields: [payment_id], references: [id])
   status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   product_data OrderProduct[]
   events OrderEvent[]
-  orderReview OrderReview[]
+  order_review OrderReview[]
 
   @@fulltext([invoice_no])
   @@map("orders")
@@ -158,10 +171,10 @@ model Order{
 
 model OrderProduct{
   id Int @id @default(autoincrement())
-  orderId Int
-  order Order @relation(fields: [orderId], references: [id])
-  productId Int
-  product Product @relation(fields: [productId], references: [id])
+  order_id Int
+  order Order @relation(fields: [order_id], references: [id])
+  product_id Int
+  product Product @relation(fields: [product_id], references: [id])
   quantity Int @default(1)
   sub_total Decimal?
   sub_total_discount Decimal?
@@ -174,8 +187,8 @@ model OrderProduct{
 
 model OrderEvent{
   id Int @id @default(autoincrement())
-  orderId Int
-  order Order @relation(fields: [orderId], references: [id])
+  order_id Int
+  order Order @relation(fields: [order_id], references: [id])
   status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -184,17 +197,18 @@ model OrderEvent{
 }
 model OrderReview{
   id Int @id @default(autoincrement())
-  orderId Int
-  order Order @relation(fields: [orderId], references: [id])
-  userId Int
-  user User @relation(fields: [userId], references: [id])
-  shopId Int
-  shop Shop @relation(fields: [shopId], references: [id])
+  order_id Int
+  order Order @relation(fields: [order_id], references: [id])
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
+  shop_id Int
+  shop Shop @relation(fields: [shop_id], references: [id])
   order_rating Int
   shop_rating Int
   driver_rating Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  @@map("order_reviews")
 }
 model PaymentMethod{
   id Int @id @default(autoincrement())
@@ -202,8 +216,8 @@ model PaymentMethod{
   description String @db.Text
   type String
   image_url String?
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 

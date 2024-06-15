@@ -1,4 +1,3 @@
-import { Shop } from "@prisma/client";
 import { prismaClient } from "..";
 import { checkIsNew } from "./index.util";
 

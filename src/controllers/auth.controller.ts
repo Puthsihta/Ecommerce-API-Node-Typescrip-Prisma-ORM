@@ -153,7 +153,6 @@ const profile = async (req: Request, res: Response) => {
       email: true,
       role: true,
       image_url: true,
-      addresss: true,
     },
   });
   res.json({ message: true, data: respone });

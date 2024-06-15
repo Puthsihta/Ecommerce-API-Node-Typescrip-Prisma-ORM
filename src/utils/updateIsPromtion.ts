@@ -23,31 +23,32 @@ export const updateIsPromotion = async () => {
 export const updateProductDiscount = async () => {
   const products = await prismaClient.product.findMany();
   products.map(async (item) => {
-    const shop: any = await prismaClient.shop.findFirst({
+    const shop = await prismaClient.shop.findFirst({
       where: {
-        id: item.shopId,
+        id: item.shop_id,
       },
     });
-    if (shop?.is_promotion) {
-      if (item.follow_shop_discount != shop.promotion.promotion) {
-        await prismaClient.product.update({
-          where: {
-            id: item.id,
-          },
-          data: {
-            follow_shop_discount: shop.promotion.promotion,
-          },
-        });
-      }
-    } else {
-      await prismaClient.product.update({
-        where: {
-          id: item.id,
-        },
-        data: {
-          follow_shop_discount: null,
-        },
-      });
-    }
+    console.log("shop : ", shop);
+    // if (shop?.is_promotion) {
+    //   if (item.follow_shop_discount != shop) {
+    //     await prismaClient.product.update({
+    //       where: {
+    //         id: item.id,
+    //       },
+    //       data: {
+    //         follow_shop_discount: shop.promotion.promotion,
+    //       },
+    //     });
+    //   }
+    // } else {
+    //   await prismaClient.product.update({
+    //     where: {
+    //       id: item.id,
+    //     },
+    //     data: {
+    //       follow_shop_discount: null,
+    //     },
+    //   });
+    // }
   });
 };

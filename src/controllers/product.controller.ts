@@ -9,20 +9,20 @@ const createProduct = async (req: Request, res: Response) => {
   //check category
   const category = await prismaClient.category.findFirst({
     where: {
-      id: +req.body.cateId,
+      id: +req.body.cate_id,
     },
   });
   //check subcategory
   let sub_category;
-  if (req.body.subCateId) {
+  if (req.body.sub_cate_id) {
     sub_category = await prismaClient.subCategory.findFirst({
       where: {
-        id: +req.body.subCateId,
+        id: +req.body.sub_cate_id,
       },
     });
   }
   if (category) {
-    if (req.body.subCateId) {
+    if (req.body.sub_cate_id) {
       if (sub_category == null) {
         throw new NotFoundException(
           false,
@@ -102,13 +102,13 @@ const updateProduct = async (req: Request, res: Response) => {
     //check category
     const category = await prismaClient.category.findFirst({
       where: {
-        id: +req.body.cateId,
+        id: +req.body.cate_id,
       },
     });
     //check subcategory
     const sub_category = await prismaClient.subCategory.findFirst({
       where: {
-        id: +req.body.subCateId,
+        id: +req.body.sub_cate_id,
       },
     });
     if (category && sub_category) {

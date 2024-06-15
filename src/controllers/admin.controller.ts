@@ -110,7 +110,7 @@ const updateOrderStatus = async (req: Request, res: Response) => {
     });
     await prismaClient.orderEvent.create({
       data: {
-        orderId: order.id,
+        order_id: order.id,
         status: +req.body.status,
       },
     });
@@ -122,7 +122,7 @@ const updateOrderStatus = async (req: Request, res: Response) => {
 const listOrders = async (req: Request, res: Response) => {
   let whereClause = {};
   const status = Number(req.query.status);
-  const userId = Number(req.query.userId);
+  const user_id = Number(req.query.user_id);
   const search = String(req.query.search);
 
   if (req.query.search) {
@@ -131,8 +131,8 @@ const listOrders = async (req: Request, res: Response) => {
   if (status) {
     whereClause = { ...whereClause, status };
   }
-  if (userId) {
-    whereClause = { ...whereClause, userId };
+  if (user_id) {
+    whereClause = { ...whereClause, user_id };
   }
   // pagenation
   const page = req.query.page || 1;

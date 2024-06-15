@@ -6,10 +6,10 @@ import { AddressSchema } from "../schemas/user";
 
 const createAddress = async (req: Request, res: Response) => {
   AddressSchema.parse(req.body);
-  const address = await prismaClient.address.create({
+  await prismaClient.address.create({
     data: {
       ...req.body,
-      userId: req.user.id,
+      user_id: req.user.id,
     },
   });
 
@@ -26,13 +26,13 @@ const listAddress = async (req: Request, res: Response) => {
   const currentPage = +page || 1;
 
   const search = String(req.query.search);
-  const userId = +req.user.id;
+  const user_id = +req.user.id;
   let whereClause = {};
   if (req.query.search) {
     whereClause = { name: { search }, address: { search } };
   }
-  if (userId) {
-    whereClause = { ...whereClause, userId };
+  if (user_id) {
+    whereClause = { ...whereClause, user_id };
   }
 
   const address = await prismaClient.address.findMany({
@@ -52,17 +52,24 @@ const listAddress = async (req: Request, res: Response) => {
 
 const updateAddress = async (req: Request, res: Response) => {
   AddressSchema.parse(req.body);
-  await prismaClient.address.update({
-    where: {
-      id: +req.params.id,
-      userId: req.user.id,
-    },
-    data: {
-      ...req.body,
-    },
-  });
-
-  res.json({ message: true, data: "Updated Address Successfully!" });
+  try {
+    await prismaClient.address.update({
+      where: {
+        id: +req.params.id,
+        user_id: req.user.id,
+      },
+      data: {
+        ...req.body,
+      },
+    });
+    res.json({ message: true, data: "Updated Address Successfully!" });
+  } catch (error) {
+    throw new NotFoundException(
+      false,
+      "Address not found",
+      ErrorCode.NOT_FOUNT
+    );
+  }
 };
 
 const deleteAddress = async (req: Request, res: Response) => {
@@ -70,7 +77,7 @@ const deleteAddress = async (req: Request, res: Response) => {
     await prismaClient.address.delete({
       where: {
         id: +req.params.id,
-        userId: req.user.id,
+        user_id: req.user.id,
       },
     });
     res.json({ message: true, data: "Address deleted successfully" });

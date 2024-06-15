@@ -4,6 +4,7 @@ import authMiddleware from "../middlewares/auth";
 import adminMiddleware from "../middlewares/admin";
 import {
   addShopPromotion,
+  cancelPromotion,
   closeShop,
   creatShop,
   deleteShop,
@@ -12,6 +13,7 @@ import {
   listProductbyShop,
   listShop,
   listShopByID,
+  promotionShop,
   updateShop,
 } from "../controllers/shop.controller";
 
@@ -23,6 +25,7 @@ shopRoutes.post(
   errorHandler(creatShop)
 );
 shopRoutes.get("/", errorHandler(listShop));
+shopRoutes.get("/promotion-shops", errorHandler(promotionShop));
 shopRoutes.get("/favorites", [authMiddleware], errorHandler(listFavoritesShop));
 shopRoutes.get("/product_list", errorHandler(listProductbyShop));
 shopRoutes.get("/:id", errorHandler(listShopByID));
@@ -46,6 +49,11 @@ shopRoutes.post(
   "/add-promotion/:id",
   [authMiddleware, adminMiddleware],
   errorHandler(addShopPromotion)
+);
+shopRoutes.put(
+  "/cancel-promotion/:id",
+  [authMiddleware, adminMiddleware],
+  errorHandler(cancelPromotion)
 );
 
 export default shopRoutes;

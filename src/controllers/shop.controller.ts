@@ -1,9 +1,5 @@
 import { Request, Response } from "express";
-import {
-  CreatShopSchema,
-  ShopProductSchema,
-  ShopPromotionSchema,
-} from "../schemas/shop";
+import { CreatShopSchema, ShopProductSchema } from "../schemas/shop";
 import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
@@ -19,14 +15,14 @@ const creatShop = async (req: Request, res: Response) => {
   //check address
   const address = await prismaClient.address.findFirst({
     where: {
-      id: +req.body.addressId,
+      id: +req.body.address_id,
     },
   });
   if (address) {
     await prismaClient.shop.create({
       data: {
         ...req.body,
-        userId: req.user.id,
+        user_id: req.user.id,
       },
     });
     res.json({ message: true, data: "Shop Create Successfully!" });
@@ -58,6 +54,9 @@ const listShop = async (req: Request, res: Response) => {
     skip: startIndex,
     take: Number(limit),
     where: whereClause,
+    include: {
+      promotion: true,
+    },
   });
   res.json({
     message: true,
@@ -72,6 +71,9 @@ const listShopByID = async (req: Request, res: Response) => {
   try {
     const shop: any = await prismaClient.shop.findFirstOrThrow({
       where: { id: +req.params.id },
+      include: {
+        promotion: true,
+      },
     });
     res.json({ message: true, data: shop });
   } catch (err) {
@@ -113,7 +115,7 @@ const closeShop = async (req: Request, res: Response) => {
         id: +req.params.id,
       },
       data: {
-        isActive: false,
+        is_active: false,
       },
     });
     res.json({ message: true, data: "Shop closed successfully" });
@@ -164,6 +166,9 @@ const listFavoritesShop = async (req: Request, res: Response) => {
     where: {
       is_favorite: true,
     },
+    include: {
+      promotion: true,
+    },
   });
   res.json({
     message: true,
@@ -184,7 +189,7 @@ const listProductbyShop = async (req: Request, res: Response) => {
   const startIndex = (Number(page) - 1) * Number(limit);
   const totalCount = await prismaClient.product.count({
     where: {
-      shopId: Number(shop_id),
+      shop_id: Number(shop_id),
     },
   });
   const totalPage = Math.ceil(totalCount / Number(limit));
@@ -193,10 +198,10 @@ const listProductbyShop = async (req: Request, res: Response) => {
     skip: startIndex,
     take: Number(limit),
     where: {
-      shopId: Number(shop_id),
+      shop_id: Number(shop_id),
     },
     select: {
-      subCategory: {
+      sub_category: {
         include: {
           product: true,
         },
@@ -214,45 +219,94 @@ const listProductbyShop = async (req: Request, res: Response) => {
 };
 
 const addShopPromotion = async (req: Request, res: Response) => {
-  ShopPromotionSchema.parse(req.body);
+  // ShopPromotionSchema.parse(req.body);
+  let isValidDate = checkValidationDate(req.body.start_date, req.body.end_date);
+  if (isValidDate) {
+    try {
+      const shop = await prismaClient.shop.findFirstOrThrow({
+        where: { id: +req.params.id },
+      });
+      await prismaClient.shop.update({
+        where: {
+          id: shop.id,
+        },
+        data: {
+          is_promotion: true,
+        },
+      });
+      await prismaClient.promotionShop.create({
+        data: {
+          ...req.body,
+          shop_id: shop.id,
+        },
+      });
+      updateProductDiscount();
+      res.json({
+        message: true,
+        data: "Promotion Successfully",
+      });
+    } catch (err) {
+      throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
+    }
+  } else {
+    throw new NotFoundException(false, "Invalid Date", ErrorCode.UNPROCESSABLE);
+  }
+};
+
+const cancelPromotion = async (req: Request, res: Response) => {
   try {
     const shop = await prismaClient.shop.findFirstOrThrow({
       where: { id: +req.params.id },
     });
-    let isValidDate = checkValidationDate(
-      req.body.start_date,
-      req.body.end_date
-    );
-    if (!isValidDate) {
-      throw new NotFoundException(
-        false,
-        "Invalid Date",
-        ErrorCode.UNPROCESSABLE
-      );
-    }
+    const promotionShop = await prismaClient.promotionShop.findFirstOrThrow({
+      where: { shop_id: +shop.id },
+    });
     await prismaClient.shop.update({
       where: {
-        id: +req.params.id,
+        id: shop.id,
       },
       data: {
-        is_promotion: !shop.is_promotion,
-        promotion: shop.is_promotion
-          ? null
-          : {
-              ...req.body,
-            },
+        is_promotion: false,
+      },
+    });
+    await prismaClient.promotionShop.delete({
+      where: {
+        id: promotionShop.id,
       },
     });
     updateProductDiscount();
     res.json({
       message: true,
-      data: shop.is_promotion
-        ? "UnPromotion Successfully"
-        : "Promotion Successfully",
+      data: "UnPromotion Successfully",
     });
   } catch (err) {
     throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
   }
+};
+
+const promotionShop = async (req: Request, res: Response) => {
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.shop.count();
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
+  const result = await prismaClient.promotionShop.findMany({
+    skip: startIndex,
+    take: Number(limit),
+    include: {
+      shop: true,
+    },
+  });
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: result,
+  });
 };
 
 export {
@@ -266,4 +320,6 @@ export {
   listFavoritesShop,
   listProductbyShop,
   addShopPromotion,
+  cancelPromotion,
+  promotionShop,
 };

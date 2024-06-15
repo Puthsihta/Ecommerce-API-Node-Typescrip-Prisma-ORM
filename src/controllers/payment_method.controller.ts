@@ -7,7 +7,7 @@ const creatPaymentMethod = async (req: Request, res: Response) => {
   PaymentMethodSchema.parse(req.body);
   await prismaClient.paymentMethod.create({
     data: {
-      userId: req.user.id,
+      user_id: req.user.id,
       ...req.body,
     },
   });

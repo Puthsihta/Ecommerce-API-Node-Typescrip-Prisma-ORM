@@ -3,7 +3,7 @@ import { z } from "zod";
 export const CreatProductchema = z.object({
   name: z.string(),
   price: z.number(),
-  cateId: z.number(),
-  shopId: z.number(),
-  // subCateId: z.number(),
+  cate_id: z.number(),
+  shop_id: z.number(),
+  // sub_cate_id: z.number(),
 });

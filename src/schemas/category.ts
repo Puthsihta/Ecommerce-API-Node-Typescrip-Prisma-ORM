@@ -5,5 +5,5 @@ export const CreatCategorySchema = z.object({
 });
 export const CreatSubCategorySchema = z.object({
   name: z.string(),
-  cateId: z.number(),
+  cate_id: z.number(),
 });

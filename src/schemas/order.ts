@@ -7,6 +7,6 @@ export const CreatOrderSchema = z.object({
       quantity: z.number(),
     })
   ),
-  addressId: z.number(),
-  paymentId: z.number(),
+  address_id: z.number(),
+  payment_id: z.number(),
 });

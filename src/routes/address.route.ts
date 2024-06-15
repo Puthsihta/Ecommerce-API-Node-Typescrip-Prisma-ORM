@@ -5,6 +5,7 @@ import {
   createAddress,
   deleteAddress,
   listAddress,
+  updateAddress,
 } from "../controllers/address.controller";
 
 const addressRoutes: Router = Router();
@@ -12,5 +13,6 @@ const addressRoutes: Router = Router();
 addressRoutes.post("/", [authMiddleware], errorHandler(createAddress));
 addressRoutes.get("/", [authMiddleware], errorHandler(listAddress));
 addressRoutes.delete("/:id", [authMiddleware], errorHandler(deleteAddress));
+addressRoutes.put("/:id", [authMiddleware], errorHandler(updateAddress));
 
 export default addressRoutes;
