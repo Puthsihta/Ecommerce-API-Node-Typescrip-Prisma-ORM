@@ -231,5 +231,71 @@ const orderReview = async (req: Request, res: Response) => {
     throw new NotFoundException(false, "Order not found", ErrorCode.NOT_FOUNT);
   }
 };
+const updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    const order = await prismaClient.order.update({
+      where: {
+        id: +req.params.id,
+      },
+      data: {
+        status: +req.body.status,
+      },
+    });
+    await prismaClient.orderEvent.create({
+      data: {
+        order_id: order.id,
+        status: +req.body.status,
+      },
+    });
+    res.json({ message: true, data: order });
+  } catch (err) {
+    throw new NotFoundException(false, "Order not found", ErrorCode.NOT_FOUNT);
+  }
+};
+const listOrders = async (req: Request, res: Response) => {
+  let whereClause = {};
+  const status = Number(req.query.status);
+  const user_id = Number(req.query.user_id);
+  const search = String(req.query.search);
 
-export { createOrder, listOder, cancelStatus, listOrderById, orderReview };
+  if (req.query.search) {
+    whereClause = { invoice_no: { search } };
+  }
+  if (status) {
+    whereClause = { ...whereClause, status };
+  }
+  if (user_id) {
+    whereClause = { ...whereClause, user_id };
+  }
+  // pagenation
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const totalCount = await prismaClient.order.count();
+  const totalPage = Math.ceil(totalCount / Number(limit));
+  const currentPage = +page || 1;
+
+  const orders = await prismaClient.order.findMany({
+    where: whereClause,
+    skip: startIndex,
+    take: Number(limit),
+  });
+
+  res.json({
+    message: true,
+    limit: limit,
+    currentPage,
+    totalPage,
+    total: totalCount,
+    data: orders,
+  });
+};
+export {
+  createOrder,
+  listOder,
+  cancelStatus,
+  listOrderById,
+  orderReview,
+  listOrders,
+  updateOrderStatus,
+};

@@ -2,11 +2,10 @@ import { Router } from "express";
 import { errorHandler } from "../error_handler";
 import authMiddleware from "../middlewares/auth";
 import {
+  changePassword,
   changeUserRole,
   getUserByID,
-  listOrders,
   listUser,
-  updateOrderStatus,
 } from "../controllers/admin.controller";
 import adminMiddleware from "../middlewares/admin";
 
@@ -32,15 +31,10 @@ adminRoute.put(
   [authMiddleware, adminMiddleware],
   errorHandler(changeUserRole)
 );
-adminRoute.get(
-  "/list-all-orders",
-  [authMiddleware, adminMiddleware],
-  errorHandler(listOrders)
-);
 adminRoute.put(
-  "/update-order-status/:id",
+  "/change-password",
   [authMiddleware, adminMiddleware],
-  errorHandler(updateOrderStatus)
+  errorHandler(changePassword)
 );
 
 export default adminRoute;
