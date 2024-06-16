@@ -6,13 +6,18 @@ import { JWT_SECRET } from "../secret";
 import { BadRequestException } from "../errors/bad_request.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
 import { NotFoundException } from "../errors/not_found.excpetion";
-import { RegisterSchema, UpdateUserSchema } from "../schemas/user";
-import { Address } from "@prisma/client";
+import {
+  RegisterSchema,
+  sentSmsSchema,
+  UpdateUserSchema,
+  verifyOtpSchema,
+} from "../schemas/user";
 import { Role } from "../constants/index.constants";
+import { ramdomOtpCodes } from "../utils/index.util";
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
   RegisterSchema.parse(req.body);
-  const { email, password, name, role, image_url } = req.body;
+  const { email, password, name, phone, role, image_url } = req.body;
   let user = await prismaClient.user.findFirst({
     where: { email },
     select: {
@@ -20,6 +25,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
       password: false,
       addresss: false,
       name: true,
+      phone: true,
       email: true,
       role: true,
       image_url: true,
@@ -29,7 +35,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     next(
       new BadRequestException(
         false,
-        "User already exists",
+        "Admin already exists",
         ErrorCode.USER_ALREADY_EXIST
       )
     );
@@ -38,6 +44,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     data: {
       name,
       email,
+      phone,
       role,
       image_url,
       password: hashSync(password, 10),
@@ -59,49 +66,6 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
   res.json({ message: true, token, data: respone });
 };
 
-const loginUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  let user = await prismaClient.user.findFirst({
-    where: { email },
-  });
-  if (!user) {
-    throw new NotFoundException(
-      false,
-      `User doesn't exists`,
-      ErrorCode.NOT_FOUNT
-    );
-  }
-  if (!compareSync(password, user.password)) {
-    throw new BadRequestException(
-      false,
-      "Incorrect password",
-      ErrorCode.INCORRECT_PASSWORD
-    );
-  }
-  if (user.role !== Role.user) {
-    throw new BadRequestException(
-      false,
-      "This is an admin account! Not a user account!",
-      ErrorCode.UNPROCESSABLE
-    );
-  }
-  let respone = await prismaClient.user.findFirst({
-    where: { email },
-    select: {
-      id: true,
-      password: false,
-      addresss: false,
-      name: true,
-      email: true,
-      role: true,
-      image_url: true,
-    },
-  });
-  const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
-
-  res.json({ message: true, token, data: respone });
-};
 const loginAdmin = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -113,7 +77,7 @@ const loginAdmin = async (req: Request, res: Response) => {
       ErrorCode.NOT_FOUNT
     );
   }
-  if (!compareSync(password, user.password)) {
+  if (!compareSync(password, String(user?.password))) {
     throw new BadRequestException(
       false,
       "Incorrect password",
@@ -178,5 +142,75 @@ const updateProfile = async (req: Request, res: Response) => {
 
   res.json({ mesage: true, data: updateUser });
 };
+const sentSms = async (req: Request, res: Response) => {
+  sentSmsSchema.parse(req.body);
+  const { phone, is_debug } = req.body;
+  let user = await prismaClient.user.findFirst({
+    where: { phone },
+  });
+  let otp_code = ramdomOtpCodes();
+  if (user) {
+    await prismaClient.user.update({
+      where: { phone },
+      data: {
+        phone,
+        otp_code: otp_code.toString(),
+      },
+    });
+  } else {
+    await prismaClient.user.create({
+      data: {
+        phone,
+        otp_code: otp_code.toString(),
+      },
+    });
+  }
+  if (is_debug) {
+    res.json({
+      message: true,
+      code: otp_code,
+    });
+  } else {
+    res.json({
+      message: true,
+      code: otp_code,
+    });
+  }
+};
+const verifyOtp = async (req: Request, res: Response) => {
+  verifyOtpSchema.parse(req.body);
+  const { phone, otp } = req.body;
+  let user = await prismaClient.user.findFirst({
+    where: { phone },
+  });
+  if (otp == user?.otp_code) {
+    user = await prismaClient.user.update({
+      where: { phone },
+      data: {
+        name: phone,
+      },
+    });
+    const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
+    let respone = await prismaClient.user.findFirst({
+      where: { phone },
+      select: {
+        id: true,
+        password: false,
+        addresss: false,
+        phone: true,
+        name: true,
+        email: true,
+        role: true,
+        image_url: true,
+      },
+    });
+    res.json({ message: true, token, data: respone });
+  } else {
+    res.json({
+      message: true,
+      data: "SMS verification code is incorrect, or Expired.",
+    });
+  }
+};
 
-export { loginUser, loginAdmin, register, profile, updateProfile };
+export { loginAdmin, register, profile, updateProfile, sentSms, verifyOtp };

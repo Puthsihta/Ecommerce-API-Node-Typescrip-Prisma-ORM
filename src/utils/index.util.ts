@@ -34,3 +34,8 @@ export const checkIsNew = (date: string) => {
     return true;
   }
 };
+
+export const ramdomOtpCodes = () => {
+  var code = Math.floor(1000 + Math.random() * 9000);
+  return code;
+};
