@@ -13,10 +13,12 @@ datasource db {
 
 model User{
   id Int @id @default(autoincrement())
-  name String
-  email String @unique
-  password String
+  name String?
+  email String? @unique
+  phone String @unique
+  password String?
   role String @default("USER")
+  otp_code String?
   image_url String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -27,7 +29,7 @@ model User{
   shopo Shop[]
   order_review OrderReview[]
   
-  @@fulltext([name, email])
+  @@fulltext([name, email, phone])
   @@map("users")
 }
 

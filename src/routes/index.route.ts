@@ -13,16 +13,16 @@ import homeRoute from "./home.route";
 
 const rootRouter: Router = Router();
 
-rootRouter.use("/auth", authRoute);
-rootRouter.use("/products", productRoutes);
-rootRouter.use("/address", addressRoutes);
-rootRouter.use("/order", orderRoute);
-rootRouter.use("/admin", adminRoute);
-rootRouter.use("/category", categoryRout);
-rootRouter.use("/payment-method", paymentMethodRoutes);
-rootRouter.use("/shops", shopRoutes);
-rootRouter.use("/setting", settingRoute);
-rootRouter.use("/home", homeRoute);
-rootRouter.use("/upload", uploadRouter);
+rootRouter.use("/v1/auth", authRoute);
+rootRouter.use("/v1/products", productRoutes);
+rootRouter.use("/v1/address", addressRoutes);
+rootRouter.use("/v1/order", orderRoute);
+rootRouter.use("/v1/admin", adminRoute);
+rootRouter.use("/v1/category", categoryRout);
+rootRouter.use("/v1/payment-method", paymentMethodRoutes);
+rootRouter.use("/v1/shops", shopRoutes);
+rootRouter.use("/v1/setting", settingRoute);
+rootRouter.use("/v1/home", homeRoute);
+rootRouter.use("/v1/upload", uploadRouter);
 
 export default rootRouter;

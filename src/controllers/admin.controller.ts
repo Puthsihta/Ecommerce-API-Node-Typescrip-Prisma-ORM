@@ -3,6 +3,7 @@ import { prismaClient } from "..";
 import { NotFoundException } from "../errors/not_found.excpetion";
 import { ErrorCode } from "../errors/root.excpetion";
 import { Role } from "../constants/index.constants";
+import { ChangePasswordSchema } from "../schemas/admin";
 
 const listUser = async (req: Request, res: Response) => {
   // pagenation
@@ -97,65 +98,40 @@ const changeUserRole = async (req: Request, res: Response) => {
     throw new NotFoundException(false, "User not found", ErrorCode.NOT_FOUNT);
   }
 };
-
-const updateOrderStatus = async (req: Request, res: Response) => {
+const changePassword = async (req: Request, res: Response) => {
+  ChangePasswordSchema.parse(req.body);
   try {
-    const order = await prismaClient.order.update({
+    const user = await prismaClient.user.findFirstOrThrow({
       where: {
-        id: +req.params.id,
-      },
-      data: {
-        status: +req.body.status,
+        id: +req.body.user_id,
       },
     });
-    await prismaClient.orderEvent.create({
+    if (user.password != req.body.current_password) {
+      throw new NotFoundException(
+        false,
+        "Current password is incorrect",
+        ErrorCode.UNPROCESSABLE
+      );
+    }
+    if (user.password == req.body.new_password) {
+      throw new NotFoundException(
+        false,
+        "New password is same as old password",
+        ErrorCode.UNPROCESSABLE
+      );
+    }
+    await prismaClient.user.update({
+      where: {
+        id: +req.body.user_id,
+      },
       data: {
-        order_id: order.id,
-        status: +req.body.status,
+        password: req.body.new_password,
       },
     });
-    res.json({ message: true, data: order });
+    res.json({ message: true, data: "Change Password Successfully!" });
   } catch (err) {
-    throw new NotFoundException(false, "Order not found", ErrorCode.NOT_FOUNT);
+    throw new NotFoundException(false, "User not found", ErrorCode.NOT_FOUNT);
   }
 };
-const listOrders = async (req: Request, res: Response) => {
-  let whereClause = {};
-  const status = Number(req.query.status);
-  const user_id = Number(req.query.user_id);
-  const search = String(req.query.search);
 
-  if (req.query.search) {
-    whereClause = { invoice_no: { search } };
-  }
-  if (status) {
-    whereClause = { ...whereClause, status };
-  }
-  if (user_id) {
-    whereClause = { ...whereClause, user_id };
-  }
-  // pagenation
-  const page = req.query.page || 1;
-  const limit = req.query.limit || 10;
-  const startIndex = (Number(page) - 1) * Number(limit);
-  const totalCount = await prismaClient.order.count();
-  const totalPage = Math.ceil(totalCount / Number(limit));
-  const currentPage = +page || 1;
-
-  const orders = await prismaClient.order.findMany({
-    where: whereClause,
-    skip: startIndex,
-    take: Number(limit),
-  });
-
-  res.json({
-    message: true,
-    limit: limit,
-    currentPage,
-    totalPage,
-    total: totalCount,
-    data: orders,
-  });
-};
-
-export { listUser, getUserByID, changeUserRole, listOrders, updateOrderStatus };
+export { listUser, getUserByID, changeUserRole, changePassword };
