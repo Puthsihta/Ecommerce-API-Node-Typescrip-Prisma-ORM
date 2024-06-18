@@ -100,6 +100,13 @@ const createOrder = async (req: Request, res: Response) => {
           total_discount: total_discount.toFixed(2),
         },
       });
+      await prismaClient.recentlyOrder.create({
+        data: {
+          user_id: req.user.id,
+          order_id: order.id,
+          address_id: address.id,
+        },
+      });
       await prismaClient.orderEvent.create({
         data: {
           order_id: +order.id,
