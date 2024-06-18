@@ -17,3 +17,22 @@ app.listen(PORT, () => {
 export const prismaClient = new PrismaClient({
   // log: ["query", "info", "warn"],
 });
+
+// export const prismaClient = new PrismaClient({	export const prismaClient = new PrismaClient();
+//   log: ["query"],
+// }).$extends({
+//   result: {
+//     // address: {
+//     //   formattedAddress: {
+//     //     needs: {
+//     //       street: true,
+//     //       city: true,
+//     //       country: true,
+//     //     },
+//     //     compute: (addr) => {
+//     //       return `${addr.street}, ${addr.city}, ${addr.country}`;
+//     //     },
+//     //   },
+//     // },
+//   },
+// });
