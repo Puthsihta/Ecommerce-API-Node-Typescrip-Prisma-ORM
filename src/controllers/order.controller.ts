@@ -10,120 +10,130 @@ import { CreatOrderReviewSchema } from "../schemas/order_review";
 const createOrder = async (req: Request, res: Response) => {
   CreatOrderSchema.parse(req.body);
   const { product, address_id, payment_id } = req.body;
-  // fetch addresss
-  const address = await prismaClient.address.findFirst({
-    where: {
-      id: address_id,
-    },
-  });
-  //fetch payment methods
-  const payment = await prismaClient.paymentMethod.findFirst({
-    where: {
-      id: payment_id,
-    },
-  });
-  // check if address & payment have
-  if (address && payment) {
-    //check if product have
-    if (product.length > 0) {
-      //check if product id have
-      for (let item of product) {
-        const findProduct = await prismaClient.product.findFirst({
-          where: {
-            id: item.id,
+  //create transaction
+  await prismaClient.$transaction(async (tx) => {
+    // fetch addresss
+    const address = await tx.address.findFirst({
+      where: {
+        id: address_id,
+      },
+    });
+    //fetch payment methods
+    const payment = await tx.paymentMethod.findFirst({
+      where: {
+        id: payment_id,
+      },
+    });
+    // check if address & payment have
+    if (address && payment) {
+      //check if product have
+      if (product.length > 0) {
+        //check if product id have
+        for (let item of product) {
+          const findProduct = await tx.product.findFirst({
+            where: {
+              id: item.id,
+            },
+          });
+          if (findProduct == null) {
+            throw new NotFoundException(
+              false,
+              "Product Not Found",
+              ErrorCode.NOT_FOUNT
+            );
+          }
+        }
+        const order = await tx.order.create({
+          data: {
+            user_id: req.user.id,
+            address_id: address.id,
+            payment_id: payment?.id,
+            total_item: product.length,
+            remarks: req.body.remarks ?? null,
           },
         });
-        if (findProduct == null) {
-          throw new NotFoundException(
-            false,
-            "Product Not Found",
-            ErrorCode.NOT_FOUNT
+        // caculate sub total of the product with qty
+        const orderProducts: OrderProduct[] = [];
+        for (let item of product) {
+          const findProduct = await tx.product.findFirst({
+            where: {
+              id: item.id,
+            },
+          });
+          let sub_total = findProduct ? +findProduct.price * item.quantity : 1;
+          let sub_total_discount;
+          if (findProduct?.discount) {
+            sub_total_discount = findProduct
+              ? ((+findProduct.price * findProduct.discount) / 100) *
+                item.quantity
+              : 1;
+          }
+          let _product: any = {
+            order_id: order.id,
+            product_id: +item.id,
+            quantity: +item.quantity,
+            sub_total: sub_total.toFixed(2),
+            sub_total_discount: sub_total_discount?.toFixed(2),
+            noted: item.noted ?? null,
+          };
+          orderProducts.push(_product);
+        }
+        //create oder product
+        await tx.orderProduct.createMany({
+          data: orderProducts,
+        });
+        //caculate total of the products order
+        let total = 0;
+        let total_discount = 0;
+        orderProducts.map((item) => {
+          total += parseFloat(item.sub_total ? item.sub_total.toString() : "1");
+          total_discount += parseFloat(
+            item.sub_total_discount ? item.sub_total_discount.toString() : "1"
           );
-        }
-      }
-      const order = await prismaClient.order.create({
-        data: {
-          user_id: req.user.id,
-          address_id: address.id,
-          payment_id: payment?.id,
-          total_item: product.length,
-          remarks: req.body.remarks ?? null,
-        },
-      });
-      // caculate sub total of the product with qty
-      const orderProducts: OrderProduct[] = [];
-      for (let item of product) {
-        const findProduct = await prismaClient.product.findFirst({
+        });
+        // update order with total
+        await tx.order.update({
           where: {
-            id: item.id,
+            id: order.id,
+          },
+          data: {
+            total: (total - total_discount).toFixed(2),
+            sub_total: total.toFixed(2),
+            total_discount: total_discount.toFixed(2),
           },
         });
-        let sub_total = findProduct ? +findProduct.price * item.quantity : 1;
-        let sub_total_discount;
-        if (findProduct?.discount) {
-          sub_total_discount = findProduct
-            ? ((+findProduct.price * findProduct.discount) / 100) *
-              item.quantity
-            : 1;
-        }
-        let _product: any = {
-          order_id: order.id,
-          product_id: +item.id,
-          quantity: +item.quantity,
-          sub_total: sub_total.toFixed(2),
-          sub_total_discount: sub_total_discount?.toFixed(2),
-          noted: item.noted ?? null,
-        };
-        orderProducts.push(_product);
-      }
-      //create oder product
-      await prismaClient.orderProduct.createMany({
-        data: orderProducts,
-      });
-      //caculate total of the products order
-      let total = 0;
-      let total_discount = 0;
-      orderProducts.map((item) => {
-        total += parseFloat(item.sub_total ? item.sub_total.toString() : "1");
-        total_discount += parseFloat(
-          item.sub_total_discount ? item.sub_total_discount.toString() : "1"
+        await tx.recentlyOrder.create({
+          data: {
+            user_id: req.user.id,
+            order_id: order.id,
+            address_id: address.id,
+          },
+        });
+        await tx.orderEvent.create({
+          data: {
+            order_id: +order.id,
+          },
+        });
+        res.json({ messsage: true, data: "Product orders successfully!" });
+      } else {
+        throw new NotFoundException(
+          false,
+          "Product is Empty",
+          ErrorCode.NOT_FOUNT
         );
-      });
-      // update order with total
-      await prismaClient.order.update({
-        where: {
-          id: order.id,
-        },
-        data: {
-          total: (total - total_discount).toFixed(2),
-          sub_total: total.toFixed(2),
-          total_discount: total_discount.toFixed(2),
-        },
-      });
-      await prismaClient.orderEvent.create({
-        data: {
-          order_id: +order.id,
-        },
-      });
-      res.json({ messsage: true, data: "Product orders successfully!" });
+      }
     } else {
       throw new NotFoundException(
         false,
-        "Product is Empty",
+        address == null && payment == null
+          ? "Address & Payment Method Not Found!"
+          : address == null
+          ? "Address Not Found"
+          : "Payment Method Not Found",
         ErrorCode.NOT_FOUNT
       );
     }
-  } else {
-    throw new NotFoundException(
-      false,
-      address == null && payment == null
-        ? "Address & Payment Method Not Found!"
-        : address == null
-        ? "Address Not Found"
-        : "Payment Method Not Found",
-      ErrorCode.NOT_FOUNT
-    );
-  }
+  });
 };
 const listOder = async (req: Request, res: Response) => {
   // pagenation

@@ -117,6 +117,7 @@ const profile = async (req: Request, res: Response) => {
       email: true,
       role: true,
       image_url: true,
+      recently_order: true,
     },
   });
   res.json({ message: true, data: respone });

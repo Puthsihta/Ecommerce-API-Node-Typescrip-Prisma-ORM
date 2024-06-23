@@ -28,6 +28,7 @@ model User{
   payment_method PaymentMethod[]
   shopo Shop[]
   order_review OrderReview[]
+  recently_order RecentlyOrder[]
   
   @@fulltext([name, email, phone])
   @@map("users")
@@ -48,6 +49,7 @@ model Address{
   @@map("addresses")
   order Order[]
   shop Shop[]
+  recently_order RecentlyOrder[]
 }
 model Category{
   id Int @id @default(autoincrement())
@@ -166,6 +168,7 @@ model Order{
   product_data OrderProduct[]
   events OrderEvent[]
   order_review OrderReview[]
+  recently_order RecentlyOrder[]
 
   @@fulltext([invoice_no])
   @@map("orders")
@@ -196,6 +199,19 @@ model OrderEvent{
   updated_at DateTime @updatedAt
 
   @@map("order_events")
+}
+model RecentlyOrder{
+  id Int @id @default(autoincrement())
+  order_id Int
+  order Order @relation(fields: [order_id], references: [id])
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
+  address_id Int
+  address Address @relation(fields: [address_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("recently_order")
 }
 model OrderReview{
   id Int @id @default(autoincrement())
