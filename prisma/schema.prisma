@@ -33,6 +33,19 @@ model User{
   @@fulltext([name, email, phone])
   @@map("users")
 }
+model Driver{
+  id Int @id @default(autoincrement())
+  name String?
+  email String? @unique
+  phone String @unique
+  password String?
+  image_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  @@fulltext([name, email, phone])
+  @@map("drivers")
+}
 
 model Address{
   id Int @id @default(autoincrement())
