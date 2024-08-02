@@ -37,11 +37,7 @@ categoryRout.post(
   [authMiddleware, adminMiddleware],
   errorHandler(creatSubCategory)
 );
-categoryRout.get(
-  "/sub-category",
-  [authMiddleware],
-  errorHandler(listSubCategory)
-);
+categoryRout.get("/sub-category", errorHandler(listSubCategory));
 categoryRout.put(
   "/sub-category/:id",
   [authMiddleware, adminMiddleware],

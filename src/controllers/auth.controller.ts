@@ -115,6 +115,7 @@ const profile = async (req: Request, res: Response) => {
       password: false,
       name: true,
       email: true,
+      phone: true,
       role: true,
       image_url: true,
       recently_order: true,
@@ -124,24 +125,16 @@ const profile = async (req: Request, res: Response) => {
 };
 
 const updateProfile = async (req: Request, res: Response) => {
-  const validation = (await UpdateUserSchema.parse(req.body)) as any;
   const updateUser = await prismaClient.user.update({
     where: {
       id: req.user.id,
     },
-    data: validation,
-    select: {
-      id: true,
-      password: false,
-      addresss: false,
-      name: true,
-      email: true,
-      role: true,
-      image_url: true,
+    data: {
+      ...req.body,
     },
   });
 
-  res.json({ mesage: true, data: updateUser });
+  res.json({ message: true, data: "Update User Successfully!" });
 };
 const sentSms = async (req: Request, res: Response) => {
   sentSmsSchema.parse(req.body);
@@ -169,12 +162,12 @@ const sentSms = async (req: Request, res: Response) => {
   if (is_debug) {
     res.json({
       message: true,
-      code: otp_code,
+      data: { code: otp_code },
     });
   } else {
     res.json({
       message: true,
-      code: otp_code,
+      data: { code: otp_code },
     });
   }
 };
@@ -185,12 +178,14 @@ const verifyOtp = async (req: Request, res: Response) => {
     where: { phone },
   });
   if (otp == user?.otp_code) {
-    user = await prismaClient.user.update({
-      where: { phone },
-      data: {
-        name: phone,
-      },
-    });
+    if (user?.name == null) {
+      user = await prismaClient.user.update({
+        where: { phone },
+        data: {
+          name: phone,
+        },
+      });
+    }
     const token = jwt.sign({ user_id: user.id }, JWT_SECRET);
     let respone = await prismaClient.user.findFirst({
       where: { phone },
@@ -205,7 +200,7 @@ const verifyOtp = async (req: Request, res: Response) => {
         image_url: true,
       },
     });
-    res.json({ message: true, token, data: respone });
+    res.json({ message: true, data: { token, user: respone } });
   } else {
     res.json({
       message: true,

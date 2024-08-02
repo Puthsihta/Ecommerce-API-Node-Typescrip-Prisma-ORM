@@ -44,26 +44,30 @@ const listShop = async (req: Request, res: Response) => {
   const currentPage = +page || 1;
 
   const search = String(req.query.search);
-  let whereClause = {};
-  if (req.query.search) {
-    whereClause = { name: { search } };
-  }
+  const provineId = Number(req.query.provine_id);
   updateIsPromotion(); // check if promotion expired
   updateIsNew(); // check if show is not new
   const result = await prismaClient.shop.findMany({
+    orderBy: { created_at: "desc" },
     skip: startIndex,
     take: Number(limit),
-    where: whereClause,
+    where: {
+      AND: [
+        {
+          name: { contains: search },
+        },
+        {
+          province_id: provineId != 0 ? provineId : null,
+        },
+      ],
+    },
     include: {
       promotion: true,
     },
   });
   res.json({
     message: true,
-    limit: limit,
-    currentPage,
-    totalPage,
-    total: totalCount,
+    pagination: { limit: limit, currentPage, totalPage, total: totalCount },
     data: result,
   });
 };
@@ -73,15 +77,20 @@ const listShopByID = async (req: Request, res: Response) => {
       where: { id: +req.params.id },
       include: {
         promotion: true,
+        address: true,
       },
     });
-    res.json({ message: true, data: shop });
+    const products = await prismaClient.product.findMany({
+      where: { shop_id: shop.id },
+      take: 10,
+    });
+    res.json({ message: true, data: { shop, products } });
   } catch (err) {
     throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
   }
 };
 const updateShop = async (req: Request, res: Response) => {
-  CreatShopSchema.parse(req.body);
+  // CreatShopSchema.parse(req.body);
   try {
     await prismaClient.shop.update({
       where: {
@@ -93,6 +102,7 @@ const updateShop = async (req: Request, res: Response) => {
     });
     res.json({ message: true, data: "Shop Updated Successfully!" });
   } catch (error) {
+    console.log("error", error);
     throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
   }
 };
@@ -161,6 +171,7 @@ const listFavoritesShop = async (req: Request, res: Response) => {
   const currentPage = +page || 1;
 
   const result = await prismaClient.shop.findMany({
+    orderBy: { created_at: "desc" },
     skip: startIndex,
     take: Number(limit),
     where: {
@@ -195,6 +206,7 @@ const listProductbyShop = async (req: Request, res: Response) => {
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
   const product_by_shop = await prismaClient.product.findMany({
+    orderBy: { created_at: "desc" },
     skip: startIndex,
     take: Number(limit),
     where: {
@@ -293,6 +305,7 @@ const promotionShop = async (req: Request, res: Response) => {
   const totalPage = Math.ceil(totalCount / Number(limit));
   const currentPage = +page || 1;
   const result = await prismaClient.promotionShop.findMany({
+    orderBy: { created_at: "desc" },
     skip: startIndex,
     take: Number(limit),
     include: {
@@ -309,6 +322,21 @@ const promotionShop = async (req: Request, res: Response) => {
   });
 };
 
+const shop = async (req: Request, res: Response) => {
+  const provinces = await prismaClient.province.findMany();
+  const shops = await prismaClient.shop.findMany({
+    orderBy: { created_at: "desc" },
+    take: 10,
+  });
+  res.json({
+    message: true,
+    data: {
+      provinces,
+      shops,
+    },
+  });
+};
+
 export {
   creatShop,
   listShop,
@@ -322,4 +350,5 @@ export {
   addShopPromotion,
   cancelPromotion,
   promotionShop,
+  shop,
 };

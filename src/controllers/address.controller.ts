@@ -36,16 +36,14 @@ const listAddress = async (req: Request, res: Response) => {
   }
 
   const address = await prismaClient.address.findMany({
-    skip: startIndex,
-    take: Number(limit),
-    where: whereClause,
+    orderBy: { created_at: "desc" },
+    // skip: startIndex,
+    // take: Number(limit),
+    // where: whereClause,
   });
   res.json({
     message: true,
-    limit: limit,
-    currentPage,
-    totalPage,
-    total: totalCount,
+    // pagination: { limit: limit, currentPage, totalPage, total: totalCount },
     data: address,
   });
 };

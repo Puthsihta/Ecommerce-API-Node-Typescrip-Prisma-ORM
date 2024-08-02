@@ -1,18 +1,32 @@
 import { Request, Response } from "express";
+import { prismaClient } from "..";
 
 const home = async (req: Request, res: Response) => {
-  let banner;
-  let categories;
-  let services;
-  let trendings;
+  const banner = await prismaClient.banner.findMany({});
+  const categories = await prismaClient.category.findMany({});
+  const best_sallings = await prismaClient.product.findMany({
+    where: {
+      is_best_salling: true,
+    },
+  });
+  const feature_shops = await prismaClient.shop.findMany({
+    where: {
+      is_features_shop: true,
+    },
+  });
+  const home_products = await prismaClient.product.findMany({
+    orderBy: { created_at: "desc" },
+    take: 10,
+  });
 
   res.json({
     message: true,
     data: {
-      banner: [],
-      categories: [],
-      services: [],
-      trendings: [],
+      banner: banner,
+      categories: categories,
+      bestSalling: best_sallings,
+      featuresShop: feature_shops,
+      products: home_products,
     },
   });
 };
@@ -52,7 +66,11 @@ const preload = async (req: Request, res: Response) => {
 };
 
 const homePrefeeds = async (req: Request, res: Response) => {
-  res.json({ message: true });
+  const home_products = await prismaClient.product.findMany({
+    orderBy: { created_at: "desc" },
+    take: 10,
+  });
+  res.json({ message: true, data: { home_product: home_products } });
 };
 
 export { home, preload, homePrefeeds };

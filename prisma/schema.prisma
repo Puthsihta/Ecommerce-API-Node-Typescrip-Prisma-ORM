@@ -50,6 +50,8 @@ model Driver{
 model Address{
   id Int @id @default(autoincrement())
   name String
+  phone String?
+  description String?
   address String
   latitude String
   longitude String
@@ -106,6 +108,7 @@ model Product{
   price Decimal
   image_url String?
   is_favorite Boolean? @default(false)
+  is_best_salling Boolean? @default(false)
   discount Int?
   follow_shop_discount Int?
   created_at DateTime @default(now())
@@ -122,13 +125,16 @@ model Shop{
   phone String?
   email String?
   address_id Int
+  province_id Int?
   user_id Int
   is_active Boolean @default(true)
   address Address @relation(fields: [address_id], references: [id])
   user User @relation(fields: [user_id], references: [id])
+  province Province? @relation(fields: [province_id], references: [id])
   cover_image String?
   logo_image String?
   is_favorite Boolean? @default(false)
+  is_features_shop Boolean? @default(false)
   is_new Boolean? @default(true)
   is_promotion Boolean? @default(false)
   
@@ -143,6 +149,8 @@ model Shop{
   product Product[]
   order_review OrderReview[]
   promotion PromotionShop[]
+  order Order[]
+  recently_order RecentlyOrder[]
 
   @@fulltext([name])
   @@map("shops")
@@ -170,6 +178,8 @@ model Order{
   total_item Int?
   invoice_no String @default("0001")
   remarks String? 
+  shop_id Int
+  shop Shop @relation(fields: [shop_id], references: [id])
   address_id Int
   address Address @relation(fields: [address_id], references: [id])
   payment_id Int
@@ -221,6 +231,8 @@ model RecentlyOrder{
   user User @relation(fields: [user_id], references: [id])
   address_id Int
   address Address @relation(fields: [address_id], references: [id])
+  shop_id Int
+  shop Shop @relation(fields: [shop_id], references: [id])
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -272,4 +284,27 @@ model Setting{
   updated_at DateTime @updatedAt
 
   @@map("settings")
+}
+model Banner{
+  id Int @id @default(autoincrement())
+  title String
+  description String? @db.Text()
+  image_url String
+  link String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("banners")
+}
+model Province{
+  id Int @id @default(autoincrement())
+  name String
+  image_url String
+  enabled Boolean
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  shop Shop[]
+
+  @@map("provinces")
 }

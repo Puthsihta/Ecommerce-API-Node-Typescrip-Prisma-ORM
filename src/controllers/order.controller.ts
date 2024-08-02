@@ -6,10 +6,11 @@ import { OrderStatus } from "../constants/index.constants";
 import { CreatOrderSchema } from "../schemas/order";
 import { OrderProduct } from "@prisma/client";
 import { CreatOrderReviewSchema } from "../schemas/order_review";
+import { ramdomInvoiceNum } from "../utils/index.util";
 
 const createOrder = async (req: Request, res: Response) => {
   CreatOrderSchema.parse(req.body);
-  const { product, address_id, payment_id } = req.body;
+  const { product, address_id, payment_id, shop_id } = req.body;
   //create transaction
   await prismaClient.$transaction(async (tx) => {
     // fetch addresss
@@ -24,8 +25,14 @@ const createOrder = async (req: Request, res: Response) => {
         id: payment_id,
       },
     });
+    //fetch shop
+    const shop = await tx.shop.findFirst({
+      where: {
+        id: shop_id,
+      },
+    });
     // check if address & payment have
-    if (address && payment) {
+    if (address && payment && shop) {
       //check if product have
       if (product.length > 0) {
         //check if product id have
@@ -48,6 +55,8 @@ const createOrder = async (req: Request, res: Response) => {
             user_id: req.user.id,
             address_id: address.id,
             payment_id: payment?.id,
+            shop_id: shop.id,
+            invoice_no: ramdomInvoiceNum(),
             total_item: product.length,
             remarks: req.body.remarks ?? null,
           },
@@ -105,6 +114,7 @@ const createOrder = async (req: Request, res: Response) => {
         await tx.recentlyOrder.create({
           data: {
             user_id: req.user.id,
+            shop_id: shop?.id,
             order_id: order.id,
             address_id: address.id,
           },
@@ -114,7 +124,7 @@ const createOrder = async (req: Request, res: Response) => {
             order_id: +order.id,
           },
         });
-        res.json({ messsage: true, data: "Product orders successfully!" });
+        res.json({ message: true, data: "Product orders successfully!" });
       } else {
         throw new NotFoundException(
           false,
@@ -162,6 +172,7 @@ const listOder = async (req: Request, res: Response) => {
   }
 
   const order = await prismaClient.order.findMany({
+    orderBy: { created_at: "desc" },
     skip: startIndex,
     take: Number(limit),
     where: whereClause,
@@ -169,10 +180,7 @@ const listOder = async (req: Request, res: Response) => {
 
   res.json({
     message: true,
-    limit: limit,
-    currentPage,
-    totalPage,
-    total: totalCount,
+    pagination: { limit: limit, currentPage, totalPage, total: totalCount },
     data: order,
   });
 };
@@ -208,8 +216,19 @@ const listOrderById = async (req: Request, res: Response) => {
         id: +req.params.id,
       },
       include: {
-        user: true,
+        user: {
+          select: {
+            id: true,
+            password: false,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+            image_url: true,
+          },
+        },
         address: true,
+        shop: true,
         payment_method: true,
         product_data: {
           include: {
@@ -233,7 +252,7 @@ const orderReview = async (req: Request, res: Response) => {
         shop_id: +req.body.shop_id,
         order_rating: +req.body.order_rating,
         shop_rating: +req.body.shop_rating,
-        driver_rating: +req.body.driver_rating ?? null,
+        // driver_rating: +req.body.driver_rating ?? null,
       },
     });
     res.json({ message: true, data: "Review Order Successfully" });
@@ -286,6 +305,7 @@ const listOrders = async (req: Request, res: Response) => {
   const currentPage = +page || 1;
 
   const orders = await prismaClient.order.findMany({
+    orderBy: { created_at: "desc" },
     where: whereClause,
     skip: startIndex,
     take: Number(limit),

@@ -23,6 +23,7 @@ const listCategory = async (req: Request, res: Response) => {
     whereClause = { name: { search }, description: { search } };
   }
   const category = await prismaClient.category.findMany({
+    orderBy: { created_at: "desc" },
     where: whereClause,
   });
   res.json({ message: true, data: category });
@@ -97,10 +98,11 @@ const listSubCategory = async (req: Request, res: Response) => {
     if (cate_id) {
       whereClause = { ...whereClause, cate_id };
     }
-    const category = await prismaClient.subCategory.findMany({
+    const sub_categories = await prismaClient.subCategory.findMany({
+      orderBy: { created_at: "desc" },
       where: whereClause,
     });
-    res.json({ message: true, data: category });
+    res.json({ message: true, data: { sub_categories } });
   } catch (err) {
     throw new NotFoundException(false, "Require cate_id", ErrorCode.NOT_FOUNT);
   }

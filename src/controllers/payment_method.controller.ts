@@ -20,6 +20,7 @@ const listPaymentMethod = async (req: Request, res: Response) => {
     whereClause = { name: { search }, description: { search } };
   }
   const paymentMethod = await prismaClient.paymentMethod.findMany({
+    orderBy: { created_at: "desc" },
     where: whereClause,
   });
   res.json({ message: true, data: paymentMethod });

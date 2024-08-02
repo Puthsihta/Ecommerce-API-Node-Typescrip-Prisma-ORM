@@ -14,6 +14,7 @@ import {
   listShop,
   listShopByID,
   promotionShop,
+  shop,
   updateShop,
 } from "../controllers/shop.controller";
 
@@ -24,7 +25,8 @@ shopRoutes.post(
   [authMiddleware, adminMiddleware],
   errorHandler(creatShop)
 );
-shopRoutes.get("/", errorHandler(listShop));
+shopRoutes.get("/", errorHandler(shop));
+shopRoutes.get("/all-shop", errorHandler(listShop));
 shopRoutes.get("/promotion-shops", errorHandler(promotionShop));
 shopRoutes.get("/favorites", [authMiddleware], errorHandler(listFavoritesShop));
 shopRoutes.get("/product_list", errorHandler(listProductbyShop));

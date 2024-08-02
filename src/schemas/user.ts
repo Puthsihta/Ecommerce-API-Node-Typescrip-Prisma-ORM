@@ -21,6 +21,7 @@ export const verifyOtpSchema = z.object({
 
 export const AddressSchema = z.object({
   name: z.string(),
+  phone: z.string().min(9),
   address: z.string(),
   latitude: z.string(),
   longitude: z.string(),

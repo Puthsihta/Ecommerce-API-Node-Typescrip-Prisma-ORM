@@ -5,3 +5,8 @@ export const ChangePasswordSchema = z.object({
   current_password: z.string().min(6),
   new_password: z.string().min(6),
 });
+
+export const CreatBannerSchema = z.object({
+  title: z.string(),
+  image_url: z.string(),
+});
