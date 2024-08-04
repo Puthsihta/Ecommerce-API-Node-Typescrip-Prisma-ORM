@@ -20,35 +20,41 @@ export const updateIsPromotion = async () => {
   });
 };
 
-export const updateProductDiscount = async () => {
-  const products = await prismaClient.product.findMany();
-  products.map(async (item) => {
-    const shop = await prismaClient.shop.findFirst({
-      where: {
-        id: item.shop_id,
-      },
-    });
-    console.log("shop : ", shop);
-    // if (shop?.is_promotion) {
-    //   if (item.follow_shop_discount != shop) {
-    //     await prismaClient.product.update({
-    //       where: {
-    //         id: item.id,
-    //       },
-    //       data: {
-    //         follow_shop_discount: shop.promotion.promotion,
-    //       },
-    //     });
-    //   }
-    // } else {
-    //   await prismaClient.product.update({
-    //     where: {
-    //       id: item.id,
-    //     },
-    //     data: {
-    //       follow_shop_discount: null,
-    //     },
-    //   });
-    // }
+export const updateProductDiscount = async (
+  shopId: number,
+  isPromotion: boolean
+) => {
+  const shop = await prismaClient.shop.findFirst({
+    where: {
+      id: shopId,
+    },
+    select: {
+      product: true,
+      promotion: true,
+    },
   });
+  // console.log("shop : ", shop);
+  if (shop) {
+    shop.product.map(async (product) => {
+      if (isPromotion) {
+        await prismaClient.product.update({
+          where: {
+            id: product.id,
+          },
+          data: {
+            follow_shop_discount: shop.promotion[0].promotion,
+          },
+        });
+      } else {
+        await prismaClient.product.update({
+          where: {
+            id: product.id,
+          },
+          data: {
+            follow_shop_discount: null,
+          },
+        });
+      }
+    });
+  }
 };

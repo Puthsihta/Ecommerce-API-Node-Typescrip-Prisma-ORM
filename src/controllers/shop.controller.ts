@@ -231,35 +231,40 @@ const listProductbyShop = async (req: Request, res: Response) => {
 };
 
 const addShopPromotion = async (req: Request, res: Response) => {
-  // ShopPromotionSchema.parse(req.body);
   let isValidDate = checkValidationDate(req.body.start_date, req.body.end_date);
   if (isValidDate) {
-    try {
-      const shop = await prismaClient.shop.findFirstOrThrow({
-        where: { id: +req.params.id },
-      });
-      await prismaClient.shop.update({
-        where: {
-          id: shop.id,
-        },
-        data: {
-          is_promotion: true,
-        },
-      });
-      await prismaClient.promotionShop.create({
-        data: {
-          ...req.body,
-          shop_id: shop.id,
-        },
-      });
-      updateProductDiscount();
-      res.json({
-        message: true,
-        data: "Promotion Successfully",
-      });
-    } catch (err) {
+    const shop = await prismaClient.shop.findFirst({
+      where: { id: +req.params.id },
+    });
+    if (shop == null) {
       throw new NotFoundException(false, "Shop not found", ErrorCode.NOT_FOUNT);
     }
+    if (shop.is_promotion) {
+      throw new NotFoundException(
+        false,
+        "Shop already have promotion",
+        ErrorCode.UNPROCESSABLE
+      );
+    }
+    await prismaClient.shop.update({
+      where: {
+        id: shop.id,
+      },
+      data: {
+        is_promotion: true,
+      },
+    });
+    await prismaClient.promotionShop.create({
+      data: {
+        ...req.body,
+        shop_id: shop.id,
+      },
+    });
+    updateProductDiscount(shop.id, true);
+    res.json({
+      message: true,
+      data: "Promotion Successfully",
+    });
   } else {
     throw new NotFoundException(false, "Invalid Date", ErrorCode.UNPROCESSABLE);
   }
@@ -286,7 +291,7 @@ const cancelPromotion = async (req: Request, res: Response) => {
         id: promotionShop.id,
       },
     });
-    updateProductDiscount();
+    updateProductDiscount(shop.id, false);
     res.json({
       message: true,
       data: "UnPromotion Successfully",
@@ -314,10 +319,7 @@ const promotionShop = async (req: Request, res: Response) => {
   });
   res.json({
     message: true,
-    limit: limit,
-    currentPage,
-    totalPage,
-    total: totalCount,
+    pagination: { limit: limit, currentPage, totalPage, total: totalCount },
     data: result,
   });
 };
