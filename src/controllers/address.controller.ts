@@ -17,19 +17,11 @@ const createAddress = async (req: Request, res: Response) => {
 };
 
 const listAddress = async (req: Request, res: Response) => {
-  // pagenation
-  const page = req.query.page || 1;
-  const limit = req.query.limit || 10;
-  const startIndex = (Number(page) - 1) * Number(limit);
-  const totalCount = await prismaClient.address.count();
-  const totalPage = Math.ceil(totalCount / Number(limit));
-  const currentPage = +page || 1;
-
   const search = String(req.query.search);
   const user_id = +req.user.id;
   let whereClause = {};
   if (req.query.search) {
-    whereClause = { name: { search }, address: { search } };
+    whereClause = { name: { contains: search }, address: { contains: search } };
   }
   if (user_id) {
     whereClause = { ...whereClause, user_id };
@@ -37,13 +29,10 @@ const listAddress = async (req: Request, res: Response) => {
 
   const address = await prismaClient.address.findMany({
     orderBy: { created_at: "desc" },
-    // skip: startIndex,
-    // take: Number(limit),
-    // where: whereClause,
+    where: whereClause,
   });
   res.json({
     message: true,
-    // pagination: { limit: limit, currentPage, totalPage, total: totalCount },
     data: address,
   });
 };
@@ -72,6 +61,12 @@ const updateAddress = async (req: Request, res: Response) => {
 
 const deleteAddress = async (req: Request, res: Response) => {
   try {
+    const address = await prismaClient.address.findFirst({
+      where: {
+        id: +req.params.id,
+        user_id: req.user.id,
+      },
+    });
     await prismaClient.address.delete({
       where: {
         id: +req.params.id,
@@ -80,6 +75,7 @@ const deleteAddress = async (req: Request, res: Response) => {
     });
     res.json({ message: true, data: "Address deleted successfully" });
   } catch (err) {
+    console.log("error : ", err);
     throw new NotFoundException(
       false,
       "Address not found",

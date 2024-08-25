@@ -53,9 +53,9 @@ const createOrder = async (req: Request, res: Response) => {
         const order = await tx.order.create({
           data: {
             user_id: req.user.id,
-            address_id: address.id,
             payment_id: payment?.id,
             shop_id: shop.id,
+            address: address,
             invoice_no: ramdomInvoiceNum(),
             total_item: product.length,
             remarks: req.body.remarks ?? null,
@@ -124,7 +124,11 @@ const createOrder = async (req: Request, res: Response) => {
             order_id: +order.id,
           },
         });
-        res.json({ message: true, data: "Product orders successfully!" });
+        res.json({
+          message: true,
+          data: "Product orders successfully!",
+          order_id: order.id,
+        });
       } else {
         throw new NotFoundException(
           false,
@@ -227,7 +231,6 @@ const listOrderById = async (req: Request, res: Response) => {
             image_url: true,
           },
         },
-        address: true,
         shop: true,
         payment_method: true,
         product_data: {

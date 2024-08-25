@@ -20,6 +20,7 @@ model User{
   role String @default("USER")
   otp_code String?
   image_url String?
+  is_active Boolean @default(true)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -62,7 +63,6 @@ model Address{
 
   @@fulltext([name, address])
   @@map("addresses")
-  order Order[]
   shop Shop[]
   recently_order RecentlyOrder[]
 }
@@ -86,7 +86,7 @@ model SubCategory{
   description String? @db.Text
   image_url String?
   cate_id Int?
-  category Category? @relation(fields: [cate_id], references: [id])
+  category Category? @relation(fields: [cate_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -97,12 +97,12 @@ model SubCategory{
 }
 model Product{
   id Int @id @default(autoincrement())
-  cate_id Int
-  category Category @relation(fields: [cate_id], references: [id])
+  cate_id Int?
+  category Category? @relation(fields: [cate_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   sub_cate_id Int?
-  sub_category SubCategory? @relation(fields: [sub_cate_id], references: [id])
+  sub_category SubCategory? @relation(fields: [sub_cate_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   shop_id Int
-  shop Shop @relation(fields: [shop_id], references: [id])
+  shop Shop @relation(fields: [shop_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name String
   description String? @db.Text
   price Decimal
@@ -124,13 +124,13 @@ model Shop{
   description String? @db.Text
   phone String?
   email String?
-  address_id Int
+  address_id Int?
   province_id Int?
   user_id Int
   is_active Boolean @default(true)
-  address Address @relation(fields: [address_id], references: [id])
+  address Address? @relation(fields: [address_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   user User @relation(fields: [user_id], references: [id])
-  province Province? @relation(fields: [province_id], references: [id])
+  province Province? @relation(fields: [province_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   cover_image String?
   logo_image String?
   is_favorite Boolean? @default(false)
@@ -162,7 +162,7 @@ model PromotionShop{
   start_date DateTime?
   end_date DateTime?
   shop_id Int
-  shop Shop @relation(fields: [shop_id], references: [id])
+  shop Shop @relation(fields: [shop_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -170,20 +170,19 @@ model PromotionShop{
 }
 model Order{
   id Int @id @default(autoincrement())
-  user_id Int
-  user User @relation(fields: [user_id], references: [id])
+  user_id Int?
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   total Decimal?
   sub_total Decimal?
   total_discount Decimal?
   total_item Int?
   invoice_no String @default("0001")
   remarks String? 
-  shop_id Int
-  shop Shop @relation(fields: [shop_id], references: [id])
-  address_id Int
-  address Address @relation(fields: [address_id], references: [id])
-  payment_id Int
-  payment_method PaymentMethod @relation(fields: [payment_id], references: [id])
+  shop_id Int?
+  shop Shop? @relation(fields: [shop_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  address Json?
+  payment_id Int?
+  payment_method PaymentMethod? @relation(fields: [payment_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -200,9 +199,9 @@ model Order{
 model OrderProduct{
   id Int @id @default(autoincrement())
   order_id Int
-  order Order @relation(fields: [order_id], references: [id])
-  product_id Int
-  product Product @relation(fields: [product_id], references: [id])
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product_id Int?
+  product Product? @relation(fields: [product_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   quantity Int @default(1)
   sub_total Decimal?
   sub_total_discount Decimal?
@@ -216,7 +215,7 @@ model OrderProduct{
 model OrderEvent{
   id Int @id @default(autoincrement())
   order_id Int
-  order Order @relation(fields: [order_id], references: [id])
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   status Int @default(1)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -226,13 +225,13 @@ model OrderEvent{
 model RecentlyOrder{
   id Int @id @default(autoincrement())
   order_id Int
-  order Order @relation(fields: [order_id], references: [id])
-  user_id Int
-  user User @relation(fields: [user_id], references: [id])
-  address_id Int
-  address Address @relation(fields: [address_id], references: [id])
-  shop_id Int
-  shop Shop @relation(fields: [shop_id], references: [id])
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user_id Int?
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  address_id Int?
+  address Address? @relation(fields: [address_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  shop_id Int?
+  shop Shop? @relation(fields: [shop_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -240,12 +239,12 @@ model RecentlyOrder{
 }
 model OrderReview{
   id Int @id @default(autoincrement())
-  order_id Int
-  order Order @relation(fields: [order_id], references: [id])
-  user_id Int
-  user User @relation(fields: [user_id], references: [id])
-  shop_id Int
-  shop Shop @relation(fields: [shop_id], references: [id])
+  order_id Int?
+  order Order? @relation(fields: [order_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  user_id Int?
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  shop_id Int?
+  shop Shop? @relation(fields: [shop_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   order_rating Int
   shop_rating Int
   driver_rating Int?
@@ -259,8 +258,8 @@ model PaymentMethod{
   description String @db.Text
   type String
   image_url String?
-  user_id Int
-  user User @relation(fields: [user_id], references: [id])
+  user_id Int?
+  user User? @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
